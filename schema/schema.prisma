@@ -1,0 +1,281 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DB_URL")
+}
+
+// Fleet owner/manager who uses the system
+model User {
+    id            String         @id @default(uuid())
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+    name          String
+    email         String?        @unique
+    contactNo     String         @unique
+    password      String
+    isActive      Boolean        @default(true)
+    
+    // Relations
+    vehicleTypes  VehicleType[]
+    vehicles      Vehicle[]
+    drivers       Driver[]
+    clients       Client[]
+    jobs          Job[]
+    invoices      Invoice[]
+    refreshTokens RefreshToken[]
+}
+
+// Refresh tokens for authentication
+model RefreshToken {
+    id        String   @id @default(uuid())
+    token     String   @unique
+    userId    String
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    expiresAt DateTime
+    createdAt DateTime @default(now())
+    
+    @@index([userId])
+    @@index([token])
+}
+
+// Client who receives services
+model Client {
+    id        String    @id @default(uuid())
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    name      String
+    email     String?
+    contactNo String
+    company   String?
+    address   String
+    isActive  Boolean   @default(true)
+    
+    // Multi-tenancy: Each client belongs to one user/owner
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId    String
+    
+    // Relations
+    jobs      Job[]
+    invoices  Invoice[]
+    payments  Payment[]
+    
+    @@unique([userId, contactNo]) // Same contact can exist for different users
+    @@index([userId])
+    @@index([isActive])
+}
+
+// Types of vehicles (Each user creates their own)
+model VehicleType {
+    id          String    @id @default(uuid())
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    name        String    // e.g., "10-Ton Truck", "Crane", "Van"
+    description String?
+    
+    // Multi-tenancy: Each vehicle type belongs to one user/owner
+    user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId      String
+    
+    // Relations
+    vehicles    Vehicle[]
+    jobs        Job[]
+    
+    @@unique([userId, name]) // Same vehicle type name can exist for different users
+    @@index([userId])
+}
+
+// Individual vehicles in the fleet
+model Vehicle {
+    id                 String      @id @default(uuid())
+    createdAt          DateTime    @default(now())
+    updatedAt          DateTime    @updatedAt
+    registrationNo     String
+    model              String?
+    isActive           Boolean     @default(true)
+    
+    // Optional tracking fields
+    insuranceExpiry    DateTime?
+    registrationExpiry DateTime?
+    
+    // Multi-tenancy: Each vehicle belongs to one user/owner
+    owner              User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+    ownerId            String
+    vehicleType        VehicleType @relation(fields: [vehicleTypeId], references: [id])
+    vehicleTypeId      String
+    
+    // Relations
+    jobs               Job[]
+
+    @@unique([ownerId, registrationNo]) // Registration unique per owner
+    @@index([ownerId])
+    @@index([vehicleTypeId])
+    @@index([isActive])
+}
+
+// Driver who operates vehicles
+model Driver {
+    id          String    @id @default(uuid())
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    name        String
+    address     String
+    contactNo   String
+    licenseNo   String
+    isActive    Boolean   @default(true)
+    joiningDate DateTime?
+    
+    // Multi-tenancy: Each driver works for one user/owner
+    user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId      String
+    
+    // Relations
+    jobs        Job[]
+    
+    @@unique([userId, contactNo]) // Same contact can exist for different users
+    @@unique([userId, licenseNo]) // Same license can exist for different users
+    @@index([userId])
+    @@index([isActive])
+}
+
+enum JobStatus {
+    PENDING
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
+
+enum InvoiceStatus {
+    DRAFT       // Invoice created but not finalized
+    SENT        // Invoice sent to client
+    PENDING     // Awaiting payment
+    PARTIAL     // Partially paid
+    PAID        // Fully paid
+    OVERDUE     // Payment overdue
+    CANCELLED   // Invoice cancelled
+}
+
+enum PaymentMethod {
+    CASH
+    UPI
+    BANK_TRANSFER
+    CHEQUE
+}
+
+model Job {
+    id            String      @id @default(uuid())
+    jobNumber     String      @unique @default(cuid())
+    createdAt     DateTime    @default(now())
+    updatedAt     DateTime    @updatedAt
+    
+    // Multi-tenancy: Each job belongs to one user/owner
+    user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId        String
+    
+    // Relations
+    client        Client      @relation(fields: [clientId], references: [id])
+    clientId      String
+    driver        Driver      @relation(fields: [driverId], references: [id])
+    driverId      String
+    vehicle       Vehicle     @relation(fields: [vehicleId], references: [id])
+    vehicleId     String
+    vehicleType   VehicleType @relation(fields: [vehicleTypeId], references: [id])
+    vehicleTypeId String
+    invoice       Invoice?    @relation(fields: [invoiceId], references: [id])
+    invoiceId     String?
+    
+    // Job details
+    description   String?
+    location      String
+    date          DateTime    // Date of the job
+    startTime     DateTime    // When job started
+    endTime       DateTime?   // When job ended (can be null if still ongoing)
+    
+    totalHours    Float?
+    ratePerHour   Float 
+    amount        Float?
+    
+    // Notes
+    notes         String?
+    
+    // Status
+    status        JobStatus   @default(COMPLETED) // Most jobs entered are already done as they are entered after completion
+    
+    @@index([userId])
+    @@index([clientId])
+    @@index([driverId])
+    @@index([vehicleId])
+    @@index([invoiceId])
+    @@index([status])
+    @@index([date])
+    @@index([createdAt])
+}
+
+// Invoice/Bill grouping multiple jobs
+model Invoice {
+    id            String        @id @default(uuid())
+    invoiceNumber String        @unique @default(cuid())
+    createdAt     DateTime      @default(now())
+    updatedAt     DateTime      @updatedAt
+    
+    // Multi-tenancy: Each invoice belongs to one user/owner
+    user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId        String
+    
+    // Relations
+    client        Client        @relation(fields: [clientId], references: [id])
+    clientId      String
+    jobs          Job[]
+    payments      Payment[]
+    
+    // Billing period
+    startDate     DateTime      // Start of billing period
+    endDate       DateTime      // End of billing period
+    
+    // Amounts
+    subtotal      Float         // Sum of all job amounts
+    tax           Float?        // Tax amount if applicable
+    totalAmount   Float         // Final amount to be paid
+    paidAmount    Float         @default(0) // Amount paid so far
+    balanceAmount Float         // Remaining balance
+    
+    // Status
+    status        InvoiceStatus @default(DRAFT)
+    dueDate       DateTime?     // When payment is due
+    
+    // Notes
+    notes         String?
+    
+    @@index([userId])
+    @@index([clientId])
+    @@index([status])
+    @@index([startDate])
+    @@index([endDate])
+    @@index([createdAt])
+}
+
+// Payment record
+model Payment {
+    id            String        @id @default(uuid())
+    createdAt     DateTime      @default(now())
+    updatedAt     DateTime      @updatedAt
+    
+    // Relations
+    invoice       Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+    invoiceId     String
+    client        Client        @relation(fields: [clientId], references: [id])
+    clientId      String
+    
+    // Payment details
+    amount        Float
+    paymentDate   DateTime      @default(now())
+    paymentMethod PaymentMethod
+    referenceNo   String?       // Cheque number, UPI transaction ID, etc.
+    notes         String?       // Your custom notes about the payment
+    
+    @@index([invoiceId])
+    @@index([clientId])
+    @@index([paymentDate])
+}

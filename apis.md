@@ -13,28 +13,104 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
 
 // ============================================
-// lib/auth.ts - JWT Authentication Utilities
+// lib/auth.ts - JWT Authentication Utilities with Refresh Tokens
 // ============================================
 import { SignJWT, jwtVerify } from 'jose';
 import { NextRequest } from 'next/server';
+import { prisma } from './prisma';
+import crypto from 'crypto';
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'your-secret-key'
 );
 
-export async function generateToken(userId: string) {
-  return await new SignJWT({ userId })
+const REFRESH_SECRET = new TextEncoder().encode(
+  process.env.REFRESH_SECRET || 'your-refresh-secret-key'
+);
+
+// Access token - short lived (15 minutes)
+export async function generateAccessToken(userId: string) {
+  return await new SignJWT({ userId, type: 'access' })
     .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime('7d')
+    .setExpirationTime('15m')
     .sign(JWT_SECRET);
 }
 
-export async function verifyToken(token: string) {
+// Refresh token - long lived (7 days)
+export async function generateRefreshToken(userId: string) {
+  const token = crypto.randomBytes(64).toString('hex');
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+
+  await prisma.refreshToken.create({
+    data: {
+      token,
+      userId,
+      expiresAt
+    }
+  });
+
+  return token;
+}
+
+export async function generateTokenPair(userId: string) {
+  const accessToken = await generateAccessToken(userId);
+  const refreshToken = await generateRefreshToken(userId);
+  
+  return { accessToken, refreshToken };
+}
+
+export async function verifyAccessToken(token: string) {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET);
+    if (payload.type !== 'access') return null;
     return payload.userId as string;
   } catch (error) {
     return null;
+  }
+}
+
+export async function verifyRefreshToken(token: string) {
+  try {
+    const refreshToken = await prisma.refreshToken.findUnique({
+      where: { token },
+      include: { user: true }
+    });
+
+    if (!refreshToken) return null;
+    
+    // Check if expired
+    if (refreshToken.expiresAt < new Date()) {
+      await prisma.refreshToken.delete({ where: { token } });
+      return null;
+    }
+
+    // Check if user is active
+    if (!refreshToken.user.isActive) {
+      return null;
+    }
+
+    return refreshToken.userId;
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function revokeRefreshToken(token: string) {
+  try {
+    await prisma.refreshToken.delete({ where: { token } });
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
+export async function revokeAllUserTokens(userId: string) {
+  try {
+    await prisma.refreshToken.deleteMany({ where: { userId } });
+    return true;
+  } catch (error) {
+    return false;
   }
 }
 
@@ -46,7 +122,7 @@ export async function getUserFromRequest(request: NextRequest) {
   }
 
   const token = authHeader.substring(7);
-  const userId = await verifyToken(token);
+  const userId = await verifyAccessToken(token);
   
   return userId;
 }
@@ -78,7 +154,7 @@ export function calculateHoursBetween(start: Date, end: Date): number {
 // ============================================
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { generateToken, errorResponse, successResponse } from '@/lib/auth';
+import { generateTokenPair, errorResponse, successResponse } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
@@ -125,12 +201,13 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Generate token
-    const token = await generateToken(user.id);
+    // Generate tokens
+    const { accessToken, refreshToken } = await generateTokenPair(user.id);
 
     return successResponse({
       user,
-      token
+      accessToken,
+      refreshToken
     }, 201);
 
   } catch (error) {
@@ -145,7 +222,7 @@ export async function POST(request: NextRequest) {
 // ============================================
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { generateToken, errorResponse, successResponse } from '@/lib/auth';
+import { generateTokenPair, errorResponse, successResponse } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
@@ -178,8 +255,8 @@ export async function POST(request: NextRequest) {
       return errorResponse('Invalid credentials', 401);
     }
 
-    // Generate token
-    const token = await generateToken(user.id);
+    // Generate tokens
+    const { accessToken, refreshToken } = await generateTokenPair(user.id);
 
     return successResponse({
       user: {
@@ -189,7 +266,8 @@ export async function POST(request: NextRequest) {
         contactNo: user.contactNo,
         createdAt: user.createdAt
       },
-      token
+      accessToken,
+      refreshToken
     });
 
   } catch (error) {
@@ -960,5 +1038,98 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Create payment error:', error);
     return errorResponse('Failed to create payment', 500);
+  }
+}
+
+
+// ============================================
+// app/api/auth/refresh/route.ts
+// ============================================
+import { NextRequest } from 'next/server';
+import { verifyRefreshToken, generateAccessToken, errorResponse, successResponse } from '@/lib/auth';
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { refreshToken } = body;
+
+    if (!refreshToken) {
+      return errorResponse('Refresh token is required', 400);
+    }
+
+    // Verify refresh token
+    const userId = await verifyRefreshToken(refreshToken);
+
+    if (!userId) {
+      return errorResponse('Invalid or expired refresh token', 401);
+    }
+
+    // Generate new access token
+    const accessToken = await generateAccessToken(userId);
+
+    return successResponse({
+      accessToken
+    });
+
+  } catch (error) {
+    console.error('Refresh token error:', error);
+    return errorResponse('Failed to refresh token', 500);
+  }
+}
+
+
+// ============================================
+// app/api/auth/logout/route.ts
+// ============================================
+import { NextRequest } from 'next/server';
+import { revokeRefreshToken, errorResponse, successResponse } from '@/lib/auth';
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { refreshToken } = body;
+
+    if (!refreshToken) {
+      return errorResponse('Refresh token is required', 400);
+    }
+
+    // Revoke the refresh token
+    await revokeRefreshToken(refreshToken);
+
+    return successResponse({
+      message: 'Logged out successfully'
+    });
+
+  } catch (error) {
+    console.error('Logout error:', error);
+    return errorResponse('Failed to logout', 500);
+  }
+}
+
+
+// ============================================
+// app/api/auth/logout-all/route.ts
+// ============================================
+import { NextRequest } from 'next/server';
+import { getUserFromRequest, revokeAllUserTokens, errorResponse, successResponse } from '@/lib/auth';
+
+export async function POST(request: NextRequest) {
+  try {
+    const userId = await getUserFromRequest(request);
+    
+    if (!userId) {
+      return errorResponse('Unauthorized', 401);
+    }
+
+    // Revoke all refresh tokens for this user
+    await revokeAllUserTokens(userId);
+
+    return successResponse({
+      message: 'Logged out from all devices successfully'
+    });
+
+  } catch (error) {
+    console.error('Logout all error:', error);
+    return errorResponse('Failed to logout from all devices', 500);
   }
 }

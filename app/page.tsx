@@ -1,10 +1,6 @@
-import Image from "next/image";
-
+import Sidebar from "./_ui/Sidebar";
 export default function Home() {
   return (
-    <div className="text-black">
-      hello
-     
-    </div>
+   <Sidebar/>
   );
 }

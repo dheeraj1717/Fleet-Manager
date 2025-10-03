@@ -38,7 +38,7 @@ const Sidebar = () => {
   };
   return (
     <div className={`border-r z-50 border-[#c9c9c9] min-h-screen py-4 shadow-md relative ${isCollapsed ? "w-[50px]" : "w-[250px]"}`}>
-      <div className="absolute right-2 top-4 cursor-pointer text-lg">{isCollapsed ? <ChevronRight onClick={handleCollapse} /> : <ChevronRight className="rotate-180" onClick={handleCollapse} />}</div>
+      <div className="absolute right-2 top-4 cursor-pointer text-lg"><ChevronRight onClick={handleCollapse} className={`${isCollapsed ? "" : "rotate-180"}`}/></div>
       <div className="flex flex-col">
         <div className="flex justify-center items-center">
           <span className={`text-xl font-semibold ${isCollapsed ? "hidden" : ""}`}>Fleet Manager</span>

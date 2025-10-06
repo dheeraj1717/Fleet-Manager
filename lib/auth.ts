@@ -2,6 +2,7 @@ import { jwtVerify, SignJWT } from "jose";
 import { NextRequest } from "next/server";
 import { prisma } from "./prisma";
 import crypto from "crypto";
+import { cookies } from "next/headers";
 
 const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "secret112233"
@@ -10,7 +11,7 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function generateAccessToken(userId: string) {
   return await new SignJWT({ userId, type: "access" })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("15m")
+    .setExpirationTime("1d")
     .sign(JWT_SECRET);
 }
 
@@ -93,13 +94,10 @@ export async function revokeAllUserTokens(userId: string) {
 }
 
 export async function getUserFromRequest(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
+  const cookieStore = await cookies();
+  const token = cookieStore.get("accessToken")?.value;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
-
-  const token = authHeader.substring(7);
+  if(!token) return null;
   const userId = await verifyAccessToken(token);
 
   return userId;

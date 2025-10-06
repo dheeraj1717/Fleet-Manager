@@ -5,26 +5,27 @@ import AddVehicles from "../_components/AddVehicles";
 import { useOnclickOutside } from "../hooks/useOnclickOutside";
 import AddVehicleType from "../_components/AddVehicleType";
 import DeleteModal from "../_components/DeleteModal";
+import { useVehicleType } from "../hooks/useVehicletype";
 
 // Dummy data for Vehicle Types
-const vehicleTypes = [
-  {
-    id: "vtype-1",
-    name: "Heavy Truck",
-    description: "10-ton capacity trucks for heavy cargo transport",
-  },
-  {
-    id: "vtype-2",
-    name: "Mini Van",
-    description: "Small vans for city deliveries and light cargo",
-  },
-  {
-    id: "vtype-3",
-    name: "Pickup Truck",
-    description:
-      "4-ton pickup trucks for medium cargo and construction materials",
-  },
-];
+// const vehicleTypes = [
+//   {
+//     id: "vtype-1",
+//     name: "Heavy Truck",
+//     description: "10-ton capacity trucks for heavy cargo transport",
+//   },
+//   {
+//     id: "vtype-2",
+//     name: "Mini Van",
+//     description: "Small vans for city deliveries and light cargo",
+//   },
+//   {
+//     id: "vtype-3",
+//     name: "Pickup Truck",
+//     description:
+//       "4-ton pickup trucks for medium cargo and construction materials",
+//   },
+// ];
 
 // Dummy data for Vehicles
 const vehicles = [
@@ -57,6 +58,7 @@ const Vehicles = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const addVehicleRef = useRef<HTMLElement>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null)
+  const {vehicleTypes, loading, error} = useVehicleType();
   const [formData, setFormData] = useState({
     model: "",
     registrationNo: "",
@@ -179,13 +181,13 @@ const Vehicles = () => {
                       {vehicle.registrationNo}
                     </td>
                     <td className="p-3 text-gray-700">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      {/* <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                         {
                           vehicleTypes.find(
                             (t) => t.id === vehicle.vehicleTypeId
                           )?.name
                         }
-                      </span>
+                      </span> */}
                     </td>
                     <td className="p-4 text-gray-700">
                       {vehicle.insuranceExpiry.toLocaleDateString()}

@@ -4,8 +4,9 @@ import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
 import { forwardRef, RefObject, useRef } from "react";
 import { useOnclickOutside } from "../hooks/useOnclickOutside";
+import { useVehicleType } from "../hooks/useVehicletype";
 
-type VehicleTypeFormData = {
+export type VehicleTypeFormData = {
   name: string;
   description: string;
 };
@@ -27,12 +28,20 @@ const AddVehicleType = forwardRef<HTMLDivElement, AddVehicleTypeProps>(
         description: "",
       },
     });
+    const { addVehicleType } = useVehicleType();
 
     const modalRef = useRef<HTMLDivElement>(null);
 
     const onSubmit = async (data: VehicleTypeFormData) => {
-      console.log("Submitted data:", data);
-      // Add your API call here
+      try {
+        await addVehicleType(data);
+        console.log("Vehicle type added successfully");
+        reset();
+        setIsAddVehicleTypeModal(false);
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        // Optionally show error message to user
+      }
     };
 
     const onSubmitForm = async (data: VehicleTypeFormData) => {

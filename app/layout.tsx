@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Sidebar from "./_ui/Sidebar";
+import Header from "./_ui/Header";
 
 export const metadata: Metadata = {
   title: "Fleet Manager",
@@ -17,7 +18,10 @@ export default function RootLayout({
       <body className={`antialiased`}>
         <div className="flex">
           <Sidebar />
-          <div className="p-2 w-full">{children}</div>
+          <div className="flex flex-col w-full">
+            <Header/>
+            <div className="p-2 w-full">{children}</div>
+          </div>
         </div>
       </body>
     </html>

@@ -4,9 +4,9 @@ import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import useAuth, { LoginData } from "../hooks/useAuth";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 
-const Login = () => {
+const Login = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => {
   const router = useRouter();
   const { login, loading, error } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +33,9 @@ const Login = () => {
 
   return (
     <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8">
+     
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8 relative">
+         <X size={24} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 cursor-pointer" onClick={() => setIsOpen(false)}/>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome Back

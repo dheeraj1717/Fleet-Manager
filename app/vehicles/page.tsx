@@ -58,7 +58,7 @@ const Vehicles = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const addVehicleRef = useRef<HTMLElement>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null)
-  const {vehicleTypes, loading, error} = useVehicleType();
+  const {vehicleTypes, fetchVehicleTypes, addVehicleType, loading, error} = useVehicleType();
   const [formData, setFormData] = useState({
     model: "",
     registrationNo: "",
@@ -279,8 +279,13 @@ const Vehicles = () => {
 
       {/* Add Vehicle Type Modal */}
       {isAddVehicleTypeModal && (
-        <AddVehicleType setIsAddVehicleTypeModal={setIsAddVehicleTypeModal} />
-      )}
+  <AddVehicleType
+    setIsAddVehicleTypeModal={setIsAddVehicleTypeModal}
+    addVehicleType={addVehicleType}
+    fetchVehicleTypes={fetchVehicleTypes}
+  />
+)}
+
 
       {/* Delete Modal */}
       {isDeleteModalOpen && (

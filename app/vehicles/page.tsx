@@ -6,65 +6,23 @@ import { useOnclickOutside } from "../hooks/useOnclickOutside";
 import AddVehicleType from "../_components/AddVehicleType";
 import DeleteModal from "../_components/DeleteModal";
 import { useVehicleType } from "../hooks/useVehicletype";
-
-// Dummy data for Vehicle Types
-// const vehicleTypes = [
-//   {
-//     id: "vtype-1",
-//     name: "Heavy Truck",
-//     description: "10-ton capacity trucks for heavy cargo transport",
-//   },
-//   {
-//     id: "vtype-2",
-//     name: "Mini Van",
-//     description: "Small vans for city deliveries and light cargo",
-//   },
-//   {
-//     id: "vtype-3",
-//     name: "Pickup Truck",
-//     description:
-//       "4-ton pickup trucks for medium cargo and construction materials",
-//   },
-// ];
-
-// Dummy data for Vehicles
-const vehicles = [
-  {
-    registrationNo: "TN 01 AB 1234",
-    model: "Tata LPT 1613",
-    isActive: true,
-    insuranceExpiry: new Date("2025-12-15"),
-    vehicleTypeId: "vtype-1",
-  },
-  {
-    registrationNo: "TN 02 CD 5678",
-    model: "Mahindra Bolero Pickup",
-    isActive: true,
-    insuranceExpiry: new Date("2025-11-10"),
-    vehicleTypeId: "vtype-3",
-  },
-  {
-    registrationNo: "TN 03 EF 9012",
-    model: "Ashok Leyland Dost+",
-    isActive: true,
-    insuranceExpiry: new Date("2025-10-05"),
-    vehicleTypeId: "vtype-2",
-  },
-];
+import { useVehicle } from "../hooks/useVehicle";
 
 const Vehicles = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddVehicleTypeModal, setIsAddVehicleTypeModal] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const addVehicleRef = useRef<HTMLElement>(null);
-  const [itemToDelete, setItemToDelete] = useState<any>(null)
-  const {vehicleTypes, fetchVehicleTypes, addVehicleType, loading, error} = useVehicleType();
+  const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const { vehicleTypes, fetchVehicleTypes, addVehicleType, loading, error } =
+    useVehicleType();
   const [formData, setFormData] = useState({
     model: "",
     registrationNo: "",
     vehicleTypeId: "",
     insuranceExpiry: "",
   });
+  const { vehicles, fetchVehicles } = useVehicle();
 
   const handleEdit = (item: any) => {
     console.log("Edit:", item);
@@ -72,7 +30,7 @@ const Vehicles = () => {
 
   const handleDelete = (item: any) => {
     console.log("Delete:", item);
-    setItemToDelete(item)
+    setItemToDelete(item);
     setIsDeleteModalOpen(true);
   };
 
@@ -106,10 +64,10 @@ const Vehicles = () => {
     setIsAddVehicleTypeModal(true);
   };
 
-  const handleDeleteVehicle = (itemToDelete:any) => {
+  const handleDeleteVehicle = (itemToDelete: any) => {
     console.log("Delete vehicle");
     setIsDeleteModalOpen(true);
-  }
+  };
 
   const toggleDeleteModal = () => {
     setIsDeleteModalOpen(!isDeleteModalOpen);
@@ -181,16 +139,18 @@ const Vehicles = () => {
                       {vehicle.registrationNo}
                     </td>
                     <td className="p-3 text-gray-700">
-                      {/* <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        {
-                          vehicleTypes.find(
-                            (t) => t.id === vehicle.vehicleTypeId
-                          )?.name
-                        }
-                      </span> */}
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {vehicle.vehicleType}
+                      </span>
                     </td>
                     <td className="p-4 text-gray-700">
-                      {vehicle.insuranceExpiry.toLocaleDateString()}
+                      <td className="p-4 text-gray-700">
+                        {vehicle.insuranceExpiry
+                          ? new Date(
+                              vehicle.insuranceExpiry
+                            ).toLocaleDateString()
+                          : "-"}
+                      </td>
                     </td>
                     <td className="p-4">
                       <div className="flex items-center justify-center gap-2">
@@ -274,18 +234,18 @@ const Vehicles = () => {
           ref={addVehicleRef as RefObject<HTMLDivElement>}
           setIsModalOpen={setIsModalOpen}
           vehicleTypes={vehicleTypes}
+          fetchVehicles={fetchVehicles}
         />
       )}
 
       {/* Add Vehicle Type Modal */}
       {isAddVehicleTypeModal && (
-  <AddVehicleType
-    setIsAddVehicleTypeModal={setIsAddVehicleTypeModal}
-    addVehicleType={addVehicleType}
-    fetchVehicleTypes={fetchVehicleTypes}
-  />
-)}
-
+        <AddVehicleType
+          setIsAddVehicleTypeModal={setIsAddVehicleTypeModal}
+          addVehicleType={addVehicleType}
+          fetchVehicleTypes={fetchVehicleTypes}
+        />
+      )}
 
       {/* Delete Modal */}
       {isDeleteModalOpen && (

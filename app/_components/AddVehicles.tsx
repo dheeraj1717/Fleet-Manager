@@ -1,21 +1,23 @@
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
 import { forwardRef } from "react";
+import { useVehicle } from "../hooks/useVehicle";
 
-type VehicleFormData = {
+export type VehicleFormData = {
   model: string;
   registrationNo: string;
   vehicleTypeId: string;
-  insuranceExpiry: string;
+  insuranceExpiry: Date | null;
 };
 
 type AddVehiclesProps = {
   setIsModalOpen: (isOpen: boolean) => void;
   vehicleTypes: Array<{ id: string; name: string; description?: string }>;
+  fetchVehicles: () => Promise<void>;
 };
 
 const AddVehicles = forwardRef<HTMLDivElement, AddVehiclesProps>(
-  ({ setIsModalOpen, vehicleTypes }, ref) => {
+  ({ setIsModalOpen, vehicleTypes, fetchVehicles }, ref) => {
     const {
       register,
       handleSubmit,
@@ -26,12 +28,21 @@ const AddVehicles = forwardRef<HTMLDivElement, AddVehiclesProps>(
         model: "",
         registrationNo: "",
         vehicleTypeId: "",
-        insuranceExpiry: "",
+        insuranceExpiry: null,
       },
     });
 
+    const {addVechile} = useVehicle();
+
     const onSubmit = async (data: VehicleFormData) => {
-      console.log("Submitted data:", data);
+      try {
+        await addVechile(data);
+        await fetchVehicles();
+        setIsModalOpen(false);
+        reset();
+      } catch (error) {
+        console.error("Error adding vehicle:", error);
+      }
     };
 
     const onSubmitForm = async (data: VehicleFormData) => {

@@ -9,7 +9,7 @@ export interface LoginData {
 
 // Create axios instance with interceptor for auto-refresh
 const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE,
+  baseURL: "",
   withCredentials: true,
 });
 
@@ -26,7 +26,7 @@ apiClient.interceptors.response.use(
       try {
         // Try to refresh the token
         await axios.post(
-          `${process.env.NEXT_PUBLIC_API_BASE}/api/auth/refresh`,
+          `/api/auth/refresh`,
           {},
           { withCredentials: true }
         );

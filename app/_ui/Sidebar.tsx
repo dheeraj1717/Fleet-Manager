@@ -2,13 +2,14 @@
 
 import {
   Briefcase,
-  ChevronRight,
+  ChevronLeft,
   Home,
   IdCard,
   Truck,
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const menu = [
@@ -18,47 +19,88 @@ const menu = [
   { name: "Drivers", icon: IdCard, path: "/drivers" },
   { name: "Jobs", icon: Briefcase, path: "/jobs" },
 ];
+
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
-    //close sidebar when size is less than 768px
     const handleResize = () => {
       if (window.innerWidth < 768) {
         setIsCollapsed(true);
       }
     };
+    handleResize(); // Check on mount
     window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  });
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const handleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
+
   return (
-    <div className={`border-r z-50 border-[#c9c9c9] min-h-screen py-4 shadow-md relative ${isCollapsed ? "w-[50px]" : "w-[250px]"}`}>
-      <div className="absolute right-2 top-4 cursor-pointer text-lg"><ChevronRight onClick={handleCollapse} className={`${isCollapsed ? "" : "rotate-180"}`}/></div>
-      <div className="flex flex-col">
-        <div className="flex justify-center items-center">
-          <span className={`text-xl font-semibold ${isCollapsed ? "hidden" : ""}`}>Fleet Manager</span>
-        </div>
-        <div className="flex flex-col gap-1 mt-5">
-          {menu.map((m, i) => {
-            const Icon = m.icon;
-            return (
-              <Link
-                href={m.path}
-                key={i}
-                className="flex gap-2 items-center hover:bg-gray-50 px-4 py-2 cursor-pointer transition-colors delay-100 text-lg text-gray-500 hover:text-[#327df4]"
-              >
-                {Icon && <Icon size={20}/>}
-                  <span className={`${isCollapsed ? "hidden" : ""}`}>{m.name}</span>
-              </Link>
-            );
-          })}
-        </div>
+    <div
+      className={`bg-white border-r border-gray-200 min-h-screen transition-all duration-300 ease-in-out ${
+        isCollapsed ? "w-16" : "w-64"
+      }`}
+    >
+      {/* Header */}
+      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+        <h1
+          className={`font-bold text-xl text-gray-800 transition-opacity duration-200 ${
+            isCollapsed ? "opacity-0 w-0" : "opacity-100"
+          }`}
+        >
+          Fleet Manager
+        </h1>
+        <button
+          onClick={handleCollapse}
+          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+          aria-label="Toggle sidebar"
+        >
+          <ChevronLeft
+            size={20}
+            className={`text-gray-600 transition-transform duration-300 ${
+              isCollapsed ? "rotate-180" : ""
+            }`}
+          />
+        </button>
       </div>
+
+      {/* Navigation */}
+      <nav className="p-3 space-y-1">
+        {menu.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.path;
+
+          return (
+            <Link
+              href={item.path}
+              key={item.path}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+                isActive
+                  ? "bg-blue-50 text-blue-600"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`}
+            >
+              <Icon
+                size={20}
+                className={`flex-shrink-0 ${
+                  isActive ? "text-blue-600" : "text-gray-500 group-hover:text-gray-900"
+                }`}
+              />
+              <span
+                className={`font-medium text-sm transition-opacity duration-200 ${
+                  isCollapsed ? "opacity-0 w-0" : "opacity-100"
+                }`}
+              >
+                {item.name}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
     </div>
   );
 };

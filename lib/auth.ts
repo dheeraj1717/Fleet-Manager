@@ -11,7 +11,7 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function generateAccessToken(userId: string) {
   return await new SignJWT({ userId, type: "access" })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("1d")
+    .setExpirationTime("15m")
     .sign(JWT_SECRET);
 }
 

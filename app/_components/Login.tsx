@@ -2,11 +2,12 @@
 
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import useAuth, { LoginData } from "../hooks/useAuth";
 import { useState } from "react";
-import { Eye, EyeOff, X } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
-const Login = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => {
+const Login = () => {
   const router = useRouter();
   const { login, loading, error } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
@@ -32,10 +33,8 @@ const Login = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
-     
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-8 relative">
-         <X size={24} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 cursor-pointer" onClick={() => setIsOpen(false)}/>
+    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center">
+      <div className="bg-white rounded-md shadow-md w-full max-w-md p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Welcome Back
@@ -44,7 +43,6 @@ const Login = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Contact Number Field */}
           <div>
             <label
               htmlFor="contactNo"
@@ -62,7 +60,7 @@ const Login = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => {
                   message: "Please enter a valid 10-digit contact number",
                 },
               })}
-              className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
+              className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.contactNo ? "border-red-500" : "border-gray-300"
               }`}
               placeholder="Enter your contact number"
@@ -75,7 +73,6 @@ const Login = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => {
             )}
           </div>
 
-          {/* Password Field */}
           <div>
             <label
               htmlFor="password"
@@ -94,7 +91,7 @@ const Login = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => {
                     message: "Password must be at least 6 characters",
                   },
                 })}
-                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 pr-10 ${
+                className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 ${
                   errors.password ? "border-red-500" : "border-gray-300"
                 }`}
                 placeholder="Enter your password"
@@ -114,14 +111,12 @@ const Login = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => {
             )}
           </div>
 
-          {/* API Error Display */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
               {error.message || "Login failed. Please try again."}
             </div>
           )}
 
-          {/* Submit Button */}
           <button
             type="submit"
             className="w-full px-4 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -131,24 +126,23 @@ const Login = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => {
           </button>
         </form>
 
-        {/* Footer Links */}
-        <div className="mt-6 text-center space-y-2">
-          <a
+        {/* <div className="mt-6 text-center space-y-2">
+          <Link
             href="/forgot-password"
-            className="text-sm text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+            className="text-sm text-blue-600 hover:text-blue-700 hover:underline block"
           >
             Forgot password?
-          </a>
+          </Link>
           <p className="text-sm text-gray-600">
             Don't have an account?{" "}
-            <a
+            <Link
               href="/register"
-              className="text-blue-600 hover:text-blue-700 hover:underline font-medium cursor-pointer"
+              className="text-blue-600 hover:text-blue-700 hover:underline font-medium"
             >
               Sign up
-            </a>
+            </Link>
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -75,3 +75,32 @@ export async function GET(request: NextRequest) {
     return errorResponse('Failed to fetch drivers', 500);
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = await getUserFromRequest(request);
+    if (!userId) {
+      return errorResponse('Unauthorized', 401);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return errorResponse('Driver ID is required');
+    }
+
+    const driver = await prisma.driver.delete({
+      where: {
+        id,
+        userId
+      }
+    });
+
+    return successResponse(driver);
+
+  } catch (error) {
+    console.error('Delete driver error:', error);
+    return errorResponse('Failed to delete driver', 500);
+  }
+}   

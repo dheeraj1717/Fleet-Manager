@@ -3,7 +3,7 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { RefObject, useRef, useState } from "react";
 import { useOnclickOutside } from "../hooks/useOnclickOutside";
 import DeleteModal from "../_components/DeleteModal";
-import { useDriver } from "../hooks/useDriver";
+import { Driver, useDriver } from "../hooks/useDriver";
 import AddDriver from "../_components/AddDriver";
 
 const Drivers = () => {
@@ -11,18 +11,17 @@ const Drivers = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const addDriverRef = useRef<HTMLElement>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
-  const { drivers, loading, error, addDriver } = useDriver();
+  const { drivers, loading, error, addDriver, deleteDriver } = useDriver();
 
   const fetchDrivers = async () => {
     // This is handled by the hook automatically
   };
 
   const handleEdit = (item: any) => {
-    console.log("Edit:", item);
+    console.log(" Edit:", item);
   };
 
   const handleDelete = (item: any) => {
-    console.log("Delete:", item);
     setItemToDelete(item);
     setIsDeleteModalOpen(true);
   };
@@ -31,10 +30,9 @@ const Drivers = () => {
     setIsModalOpen(false);
   });
 
-  const handleDeleteDriver = (itemToDelete: any) => {
-    console.log("Delete driver");
+  const handleDeleteDriver = async (itemToDelete: any) => {
+    await deleteDriver(itemToDelete.id);
     setIsDeleteModalOpen(false);
-    // Add your delete API call here
   };
 
   return (
@@ -61,9 +59,13 @@ const Drivers = () => {
       <div className="w-full mt-20 max-w-6xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
           {loading ? (
-            <div className="p-8 text-center text-gray-500">Loading drivers...</div>
+            <div className="p-8 text-center text-gray-500">
+              Loading drivers...
+            </div>
           ) : error ? (
-            <div className="p-8 text-center text-red-500">Error loading drivers</div>
+            <div className="p-8 text-center text-red-500">
+              Error loading drivers
+            </div>
           ) : drivers.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               No drivers found. Add your first driver!

@@ -70,7 +70,9 @@ export default function useAuth() {
     setLoading(true);
     setError(null);
     try {
-      await apiClient.post("/api/auth/logout");
+      await apiClient.post("/api/auth/logout",{
+        withCredentials: true
+      });
       // Redirect to login page
       if (typeof window !== 'undefined') {
         window.location.href = '/login';

@@ -147,7 +147,7 @@ const Jobs = () => {
                             {job.vehicle?.registrationNo || "N/A"}
                           </span>
                           <span className="text-xs text-gray-500">
-                            {job.vehicleType?.name || "N/A"}
+                            {job.vehicle?.vehicleType?.name || job.vehicleType?.name || "N/A"}
                           </span>
                         </div>
                       </td>
@@ -158,7 +158,7 @@ const Jobs = () => {
                         {new Date(job.date).toLocaleDateString()}
                       </td>
                       <td className="p-4 text-gray-900 font-semibold">
-                        ₹{job.amount.toLocaleString()}
+                        ₹{Number(job.amount).toLocaleString()}
                       </td>
                       <td className="p-4">
                         <span
@@ -206,7 +206,6 @@ const Jobs = () => {
           clients={clients || []}
           drivers={drivers || []}
           vehicles={vehicles || []}
-          vehicleTypes={vehicleTypes || []}
         />
       )}
 

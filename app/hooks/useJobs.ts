@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 export interface Job {
   id: string;
+  jobNumber: string;
   clientId: string;
   driverId: string;
   vehicleId: string;
@@ -17,23 +18,52 @@ export interface Job {
   amount: number;
   status: string;
   notes?: string;
+  createdAt: string;
+  updatedAt: string;
   // Include relations for display
   client?: {
+    id: string;
     name: string;
+    email?: string;
+    contactNo: string;
+    company?: string;
   };
   driver?: {
+    id: string;
     name: string;
+    contactNo: string;
+    licenseNo: string;
   };
   vehicle?: {
+    id: string;
     registrationNo: string;
+    model?: string;
     vehicleType: {
+      id: string;
       name: string;
     };
   };
   vehicleType?: {
+    id: string;
     name: string;
   };
 }
+
+export type CreateJobData = {
+  clientId: string;
+  driverId: string;
+  vehicleId: string;
+  vehicleTypeId: string;
+  location: string;
+  date: string;
+  startTime: string;
+  endTime?: string;
+  totalHours?: number;
+  ratePerHour: number;
+  amount: number;
+  status?: string;
+  notes?: string;
+};
 
 export const useJobs = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -44,7 +74,7 @@ export const useJobs = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get("/api/job", {
+      const res = await axios.get("/api/jobs", {
         withCredentials: true,
       });
       const data = res.data;
@@ -62,9 +92,9 @@ export const useJobs = () => {
     fetchJobs();
   }, []);
 
-  const addJob = async (data: Omit<Job, "id">) => {
+  const addJob = async (jobData: CreateJobData) => {
     try {
-      await axios.post("/api/job", data, {
+      await axios.post("/api/jobs", jobData, {
         withCredentials: true,
       });
       await fetchJobs();

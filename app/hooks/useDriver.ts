@@ -2,6 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 
 export type Driver = {
+    id: number;
     name: string;
     address: string;
     contactNo: string;

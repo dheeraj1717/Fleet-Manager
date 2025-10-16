@@ -46,4 +46,5 @@ export const CreateJobSchema = z.object({
   startTime: z.string().min(2, "Start time must be at least 2 characters"),
   ratePerHour: z.number(),
   amount: z.number(),
+  notes: z.string().optional(),
 });

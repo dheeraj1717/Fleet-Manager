@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import { VehicleFormData } from "../_components/AddVehicles";
 
 interface Vehicle {
+  id: string;
   model: string;
   registrationNo: string;
   vehicleType: string;
-  insuranceExpiry: Date | null;
+  vehicleTypeId: string;
+  insuranceExpiry: string | null;
 }
 
 export const useVehicle = () => {

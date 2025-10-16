@@ -1,30 +1,21 @@
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
-import { forwardRef } from "react";
-
-export type JobFormData = {
-  clientId: string;
-  driverId: string;
-  vehicleId: string;
-  vehicleTypeId: string;
-  location: string;
-  date: string;
-  startTime: string;
-  endTime?: string;
-  ratePerHour: number;
-  amount: number;
-  status: string;
-  notes?: string;
-};
+import { forwardRef, useEffect } from "react";
+import { CreateJobData } from "../hooks/useJobs";
 
 type AddJobProps = {
   setIsModalOpen: (isOpen: boolean) => void;
-  addJob: (data: JobFormData) => Promise<void>;
+  addJob: (data: CreateJobData) => Promise<void>;
   fetchJobs: () => Promise<void>;
-  clients: Array<{ id: string; name: string }>;
-  drivers: Array<{ id: string; name: string }>;
-  vehicles: Array<{ id: string; registrationNo: string; model: string }>;
-  vehicleTypes: Array<{ id: string; name: string }>;
+  clients: Array<{ id: number; name: string }>;
+  drivers: Array<{ id: number; name: string }>;
+  vehicles: Array<{ 
+    id: string; 
+    registrationNo: string; 
+    model?: string;
+    vehicleType?: string;
+    vehicleTypeId?: string;
+  }>;
 };
 
 const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
@@ -36,7 +27,6 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
       clients,
       drivers,
       vehicles,
-      vehicleTypes,
     },
     ref
   ) => {
@@ -46,7 +36,8 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
       formState: { errors, isSubmitting },
       reset,
       watch,
-    } = useForm<JobFormData>({
+      setValue,
+    } = useForm<CreateJobData>({
       defaultValues: {
         clientId: "",
         driverId: "",
@@ -55,7 +46,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
         location: "",
         date: "",
         startTime: "",
-        endTime: "",
+        totalHours: 0,
         ratePerHour: 0,
         amount: 0,
         status: "COMPLETED",
@@ -63,9 +54,40 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
       },
     });
 
-    const onSubmit = async (data: JobFormData) => {
+    // Watch for changes in hours and rate to calculate amount
+    const totalHours = watch("totalHours");
+    const ratePerHour = watch("ratePerHour");
+    const selectedVehicleId = watch("vehicleId");
+
+    // Auto-calculate amount when hours or rate changes
+    useEffect(() => {
+      const hours = Number(totalHours) || 0;
+      const rate = Number(ratePerHour) || 0;
+      const calculatedAmount = hours * rate;
+      setValue("amount", calculatedAmount);
+    }, [totalHours, ratePerHour, setValue]);
+
+    // Auto-fill vehicle type when vehicle is selected
+    useEffect(() => {
+      if (selectedVehicleId) {
+        const selectedVehicle = vehicles.find(v => v.id === selectedVehicleId);
+        if (selectedVehicle) {
+          setValue("vehicleTypeId", selectedVehicle.vehicleTypeId!);
+        }
+      }
+    }, [selectedVehicleId, vehicles, setValue]);
+
+    const onSubmit = async (data: CreateJobData) => {
       try {
-        await addJob(data);
+        // Ensure numbers are properly formatted
+        const jobData: CreateJobData = {
+          ...data,
+          totalHours: Number(data.totalHours),
+          ratePerHour: Number(data.ratePerHour),
+          amount: Number(data.amount),
+        };
+        
+        await addJob(jobData);
         await fetchJobs();
         setIsModalOpen(false);
         reset();
@@ -110,7 +132,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                   }`}
                 >
                   <option value="">Select client</option>
-                  {clients.map((client) => (
+                  {clients?.map((client) => (
                     <option key={client.id} value={client.id}>
                       {client.name}
                     </option>
@@ -140,7 +162,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                   }`}
                 >
                   <option value="">Select driver</option>
-                  {drivers.map((driver) => (
+                  {drivers?.map((driver) => (
                     <option key={driver.id} value={driver.id}>
                       {driver.name}
                     </option>
@@ -154,68 +176,40 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
               </div>
             </div>
 
-            {/* Row 2: Vehicle and Vehicle Type */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="vehicleId"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Vehicle <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="vehicleId"
-                  {...register("vehicleId", {
-                    required: "Vehicle is required",
-                  })}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
-                    errors.vehicleId ? "border-red-500" : "border-gray-300"
-                  }`}
-                >
-                  <option value="">Select vehicle</option>
-                  {vehicles.map((vehicle) => (
-                    <option key={vehicle.id} value={vehicle.id}>
-                      {vehicle.registrationNo} - {vehicle.model}
-                    </option>
-                  ))}
-                </select>
-                {errors.vehicleId && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.vehicleId.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="vehicleTypeId"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Vehicle Type <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="vehicleTypeId"
-                  {...register("vehicleTypeId", {
-                    required: "Vehicle type is required",
-                  })}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
-                    errors.vehicleTypeId ? "border-red-500" : "border-gray-300"
-                  }`}
-                >
-                  <option value="">Select type</option>
-                  {vehicleTypes.map((type) => (
-                    <option key={type.id} value={type.id}>
-                      {type.name}
-                    </option>
-                  ))}
-                </select>
-                {errors.vehicleTypeId && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.vehicleTypeId.message}
-                  </p>
-                )}
-              </div>
+            {/* Vehicle - Auto-fills vehicle type */}
+            <div>
+              <label
+                htmlFor="vehicleId"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Vehicle <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="vehicleId"
+                {...register("vehicleId", {
+                  required: "Vehicle is required",
+                })}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
+                  errors.vehicleId ? "border-red-500" : "border-gray-300"
+                }`}
+              >
+                <option value="">Select vehicle</option>
+                {vehicles?.map((vehicle) => (
+                  <option key={vehicle.id} value={vehicle.id}>
+                    {vehicle.registrationNo}
+                    {vehicle.model && ` - ${vehicle.model}`}
+                  </option>
+                ))}
+              </select>
+              {errors.vehicleId && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.vehicleId.message}
+                </p>
+              )}
             </div>
+
+            {/* Hidden vehicle type field - auto-filled */}
+            <input type="hidden" {...register("vehicleTypeId")} />
 
             {/* Location */}
             <div>
@@ -243,8 +237,8 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
               )}
             </div>
 
-            {/* Row 3: Date and Time */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Row 2: Date and Start Time */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="date"
@@ -292,34 +286,47 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                   </p>
                 )}
               </div>
-
-              <div>
-                <label
-                  htmlFor="endTime"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  End Time
-                </label>
-                <input
-                  type="time"
-                  id="endTime"
-                  {...register("endTime")}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-blue-500"
-                />
-              </div>
             </div>
 
-            {/* Row 4: Rate and Amount */}
-            <div className="grid grid-cols-2 gap-4">
+            {/* Row 3: Hours, Rate, and Auto-calculated Amount */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label
+                  htmlFor="totalHours"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Total Hours <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.5"
+                  id="totalHours"
+                  {...register("totalHours", {
+                    required: "Total hours is required",
+                    min: { value: 0, message: "Hours must be positive" },
+                  })}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
+                    errors.totalHours ? "border-red-500" : "border-gray-300"
+                  }`}
+                  placeholder="e.g., 8"
+                />
+                {errors.totalHours && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.totalHours.message}
+                  </p>
+                )}
+              </div>
+
               <div>
                 <label
                   htmlFor="ratePerHour"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Rate Per Hour (₹) <span className="text-red-500">*</span>
+                  Rate/Hour (₹) <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
+                  step="0.01"
                   id="ratePerHour"
                   {...register("ratePerHour", {
                     required: "Rate per hour is required",
@@ -342,25 +349,21 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                   htmlFor="amount"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Total Amount (₹) <span className="text-red-500">*</span>
+                  Total Amount (₹)
                 </label>
                 <input
                   type="number"
+                  step="0.01"
                   id="amount"
-                  {...register("amount", {
-                    required: "Amount is required",
-                    min: { value: 0, message: "Amount must be positive" },
-                  })}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
-                    errors.amount ? "border-red-500" : "border-gray-300"
-                  }`}
-                  placeholder="e.g., 4000"
+                  {...register("amount")}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none"
+                  placeholder="Auto-calculated"
+                  readOnly
                 />
-                {errors.amount && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.amount.message}
-                  </p>
-                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Auto-calculated: {totalHours || 0} × ₹{ratePerHour || 0} = ₹
+                  {((Number(totalHours) || 0) * (Number(ratePerHour) || 0)).toFixed(2)}
+                </p>
               </div>
             </div>
 

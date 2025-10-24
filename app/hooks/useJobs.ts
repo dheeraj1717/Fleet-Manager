@@ -16,6 +16,7 @@ export interface Job {
   totalHours?: number;
   ratePerHour: number;
   amount: number;
+  challanNo : string;
   status: string;
   notes?: string;
   createdAt: string;
@@ -63,6 +64,7 @@ export type CreateJobData = {
   amount: number;
   status?: string;
   notes?: string;
+  challanNo : string;
 };
 
 export const useJobs = () => {
@@ -78,7 +80,7 @@ export const useJobs = () => {
         withCredentials: true,
       });
       const data = res.data;
-      console.log(data);
+      console.log("jobs",data);
       setJobs(data);
     } catch (error: any) {
       setError(error);

@@ -20,7 +20,6 @@ const Jobs = () => {
   const { clients } = useClient();
   const { drivers } = useDriver();
   const { vehicles } = useVehicle();
-  const { vehicleTypes } = useVehicleType();
 
   const handleEdit = (item: any) => {
     console.log("Edit:", item);
@@ -96,7 +95,10 @@ const Jobs = () => {
                 <thead>
                   <tr className="bg-white border-b-2 border-indigo-200">
                     <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                      Job #
+                      Job No.
+                    </th>
+                    <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
+                      Challan No.
                     </th>
                     <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                       Client
@@ -133,7 +135,10 @@ const Jobs = () => {
                       }`}
                     >
                       <td className="p-4 text-gray-900 font-medium">
-                        #{job.jobNumber || job.id.slice(0, 8)}
+                        {i+1}
+                      </td>
+                      <td className="p-4 text-gray-900 font-medium">
+                        {job.challanNo || "-"} 
                       </td>
                       <td className="p-4 text-gray-700">
                         {job.client?.name || "N/A"}

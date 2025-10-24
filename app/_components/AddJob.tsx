@@ -177,7 +177,8 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
             </div>
 
             {/* Vehicle - Auto-fills vehicle type */}
-            <div>
+            <div className="flex gap-4 w-full">
+              <div className="w-1/2">
               <label
                 htmlFor="vehicleId"
                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -206,6 +207,31 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                   {errors.vehicleId.message}
                 </p>
               )}
+            </div>
+            <div className="w-1/2">
+            <label
+              htmlFor="challanNo"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Challan No <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="challanNo"
+              {...register("challanNo", {
+                required: "Challan No is required",
+              })}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
+                errors.challanNo ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="e.g., 12345"
+            />
+            {errors.challanNo && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.challanNo.message}
+              </p>
+            )}
+            </div>
             </div>
 
             {/* Hidden vehicle type field - auto-filled */}
@@ -238,7 +264,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
             </div>
 
             {/* Row 2: Date and Start Time */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <label
                   htmlFor="date"
@@ -283,6 +309,29 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                 {errors.startTime && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.startTime.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label
+                  htmlFor="endTime"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  End Time <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="time"
+                  id="endTime"
+                  {...register("endTime", {
+                    required: "End time is required",
+                  })}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
+                    errors.endTime ? "border-red-500" : "border-gray-300"
+                  }`}
+                />
+                {errors.endTime && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.endTime.message}
                   </p>
                 )}
               </div>

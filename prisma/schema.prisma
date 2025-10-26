@@ -194,7 +194,7 @@ model Job {
     date        DateTime // Date of the job
     startTime   DateTime // When job started
     endTime     DateTime? // When job ended (can be null if still ongoing)
-    challanNo   String?   @unique
+    challanNo   String   @unique
 
     totalHours  Float?
     ratePerHour Float

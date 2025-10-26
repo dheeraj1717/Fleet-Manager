@@ -108,7 +108,7 @@ export const useJobs = () => {
 
   const deleteJob = async (id: string) => {
     try {
-      await axios.delete(`/api/job/${id}`, {
+      await axios.delete(`/api/jobs?id=${id}`, {
         withCredentials: true,
       });
       await fetchJobs();

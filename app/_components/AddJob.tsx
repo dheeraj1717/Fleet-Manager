@@ -46,11 +46,13 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
         location: "",
         date: "",
         startTime: "",
+        endTime: "",
         totalHours: 0,
         ratePerHour: 0,
         amount: 0,
         status: "COMPLETED",
         notes: "",
+        challanNo: "",
       },
     });
 

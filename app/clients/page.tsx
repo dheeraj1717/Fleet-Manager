@@ -5,6 +5,7 @@ import AddClient from "../_components/AddClient";
 import { useOnclickOutside } from "../hooks/useOnclickOutside";
 import DeleteModal from "../_components/DeleteModal";
 import { useClient } from "../hooks/useClient";
+import { useRouter } from "next/navigation";
 
 const Clients = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,13 +13,18 @@ const Clients = () => {
   const addClientRef = useRef<HTMLElement>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
   const { clients, loading, error, addClient, deleteClient, fetchClients } = useClient();
+  const router = useRouter();
 
+  const handleRowClick = (clientId: string) => {
+    router.push(`/clients/${clientId}`);
+  };
   const handleEdit = (item: any) => {
     console.log("Edit:", item);
     // TODO: Implement edit functionality
   };
 
-  const handleDelete = async (item: any) => {
+  const handleDelete = async (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
     setItemToDelete(item);
     setIsDeleteModalOpen(true);
   };
@@ -92,8 +98,9 @@ const Clients = () => {
               <tbody className="divide-y divide-gray-200">
                 {clients.map((client: any, i: number) => (
                   <tr
+                  onClick={() => handleRowClick(client.id)}
                     key={client.id}
-                    className={`transition-colors hover:bg-[#f6faff] ${
+                    className={`transition-colors cursor-pointer hover:bg-[#f6faff] ${
                       i % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
@@ -122,7 +129,7 @@ const Clients = () => {
                           <Pencil size={18} />
                         </button>
                         <button
-                          onClick={() => handleDelete(client)}
+                          onClick={(e) => handleDelete(e, client)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
                           title="Delete"
                         >

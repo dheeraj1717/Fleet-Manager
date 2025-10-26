@@ -87,9 +87,12 @@ export async function POST(request: NextRequest) {
       location,
       date,
       startTime,
+      endTime,
+      totalHours,
       ratePerHour,
       amount,
-      notes
+      notes,
+      challanNo
     } = data.data;
 
     // Verify all related entities exist and belong to the user
@@ -104,11 +107,32 @@ export async function POST(request: NextRequest) {
       return errorResponse("Invalid client, driver, vehicle, or vehicle type", 400);
     }
 
-    // Convert date and time strings to DateTime
+    // Convert date string to DateTime
     const jobDate = new Date(date);
-    const [hours, minutes] = startTime.split(":");
+    
+    // Parse start time
+    const [startHours, startMinutes] = startTime.split(":");
     const jobStartTime = new Date(jobDate);
-    jobStartTime.setHours(parseInt(hours), parseInt(minutes));
+    jobStartTime.setHours(parseInt(startHours), parseInt(startMinutes), 0, 0);
+
+    // Parse end time
+    const [endHours, endMinutes] = endTime.split(":");
+    const jobEndTime = new Date(jobDate);
+    jobEndTime.setHours(parseInt(endHours), parseInt(endMinutes), 0, 0);
+
+    // If end time is before start time, assume it's the next day
+    if (jobEndTime < jobStartTime) {
+      jobEndTime.setDate(jobEndTime.getDate() + 1);
+    }
+    
+    const challanNoExists = await prisma.job.findFirst({
+      where: {
+        challanNo,
+      },
+    });
+    if (challanNoExists) {
+      return errorResponse("Challan number already exists", 400);
+    }
 
     const job = await prisma.job.create({
       data: {
@@ -120,10 +144,13 @@ export async function POST(request: NextRequest) {
         location,
         date: jobDate,
         startTime: jobStartTime,
+        endTime: jobEndTime,
+        totalHours,
         ratePerHour: parseFloat(ratePerHour.toString()),
         amount: parseFloat(amount.toString()),
         status: "COMPLETED",
         notes: notes || null,
+        challanNo
       },
       include: {
         client: {
@@ -169,5 +196,45 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Create job error:", error);
     return errorResponse("Failed to create job", 500);
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = await getUserFromRequest(request);
+    if (!userId) {
+      return errorResponse("Unauthorized", 401);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return errorResponse("Job ID is required", 400);
+    }
+
+    // First, verify the job exists and belongs to the user
+    const existingJob = await prisma.job.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+
+    if (!existingJob) {
+      return errorResponse("Job not found", 404);
+    }
+
+    if (existingJob.userId !== userId) {
+      return errorResponse("Unauthorized - You don't own this job", 403);
+    }
+
+    // Now delete the job
+    const job = await prisma.job.delete({
+      where: { id },
+    });
+
+    return successResponse({ message: "Job deleted successfully", job });
+  } catch (error) {
+    console.error("Delete job error:", error);
+    return errorResponse("Failed to delete job", 500);
   }
 }

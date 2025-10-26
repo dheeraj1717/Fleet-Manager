@@ -37,14 +37,17 @@ export const CreateDriverSchema = z.object({
 });
 
 export const CreateJobSchema = z.object({
-  vehicleId: z.string().uuid("Invalid vehicle"),
-  driverId: z.string().uuid("Invalid driver"),
-  clientId: z.string().uuid("Invalid client"),
-  vehicleTypeId: z.string().uuid("Invalid vehicle type"),
-  date: z.string().min(2, "Date must be at least 2 characters"),
-  location: z.string().min(2, "Start location must be at least 2 characters"),
-  startTime: z.string().min(2, "Start time must be at least 2 characters"),
-  ratePerHour: z.number(),
-  amount: z.number(),
+  vehicleId: z.string().min(1, "Invalid vehicle"),
+  driverId: z.string().min(1, "Invalid driver"),
+  clientId: z.string().min(1, "Invalid client"),
+  vehicleTypeId: z.string().min(1, "Invalid vehicle type"),
+  date: z.string().min(1, "Date is required"),
+  location: z.string().min(2, "Location must be at least 2 characters"),
+  startTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().min(1, "End time is required"),
+  totalHours: z.number().min(0, "Total hours must be positive"),
+  ratePerHour: z.number().min(0, "Rate per hour must be positive"),
+  amount: z.number().min(0, "Amount must be positive"),
   notes: z.string().optional(),
+  challanNo: z.string().min(1, "Challan number is required"),
 });

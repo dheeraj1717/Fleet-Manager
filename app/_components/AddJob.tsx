@@ -350,7 +350,6 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                 </label>
                 <input
                   type="number"
-                  step="0.5"
                   id="totalHours"
                   {...register("totalHours", {
                     required: "Total hours is required",
@@ -377,7 +376,6 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                 </label>
                 <input
                   type="number"
-                  step="0.01"
                   id="ratePerHour"
                   {...register("ratePerHour", {
                     required: "Rate per hour is required",
@@ -404,7 +402,6 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                 </label>
                 <input
                   type="number"
-                  step="0.01"
                   id="amount"
                   {...register("amount")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none"

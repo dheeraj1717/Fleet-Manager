@@ -431,9 +431,8 @@ const PrintBill = ({ client, jobs, onClose, userCompany }: PrintBillProps) => {
                   position: absolute;
                   top: 20px;
                   right: 20px;
-                  border: 1px solid #000;
-                  padding: 5px 10px;
-                  font-size: 11px;
+                  font-size: 12px;
+                  font-weight: bold;
                   background-color: white;
                 }
               `}
@@ -442,13 +441,13 @@ const PrintBill = ({ client, jobs, onClose, userCompany }: PrintBillProps) => {
             <div className="tax-invoice-page" style={{ position: "relative" }}>
               <div className="original-copy">Original Copy</div>
               
-              <div style={{ fontSize: "11px", marginBottom: "5px" }}>
+              <div style={{ fontSize: "12px", marginBottom: "5px", fontWeight: "bold" }}>
                 GSTIN : {userCompany.gstin || "N/A"}
               </div>
 
               <div className="tax-invoice-header">
-                <h1 style={{ textDecoration: "underline" }}>TAX INVOICE</h1>
-                <h2 style={{ fontSize: "20px", marginTop: "5px" }}>{userCompany.name}</h2>
+                <h3 style={{ textDecoration: "underline", fontWeight: "600" }}>TAX INVOICE</h3>
+                <h2 style={{ fontSize: "24px", marginTop: "5px", fontFamily:"Times New Roman", fontWeight: "bold"  }}>{userCompany.name}</h2>
                 <p>({client.company || "Shree Shyam Market"})</p>
                 <p>{userCompany.address}</p>
                 <p>Contact No. : {userCompany.contactNo}</p>

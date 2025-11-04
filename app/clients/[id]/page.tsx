@@ -10,6 +10,13 @@ const ClientDetails = () => {
   const router = useRouter();
   const { client, jobs, loading, error } = useClientJobs(params.id);
   const [showPrintModal, setShowPrintModal] = useState(false);
+  const [jobFilter, setJobFilter] = useState<"all" | "billed" | "unbilled">("all");
+
+  const filteredJobs = jobs.filter(job => {
+  if (jobFilter === "billed") return job.invoiceId !== null;
+  if (jobFilter === "unbilled") return job.invoiceId === null;
+  return true;
+});
 
   // Your company details - Replace with actual data or fetch from API
   const userCompany = {
@@ -62,6 +69,26 @@ const ClientDetails = () => {
         <ArrowLeft size={20} />
         <span>Back to Clients</span>
       </button>
+      <div className="flex gap-2 mb-4">
+  <button
+    onClick={() => setJobFilter("all")}
+    className={`px-4 py-2 rounded-md ${jobFilter === "all" ? "bg-blue-600 text-white" : "bg-gray-100"}`}
+  >
+    All Jobs
+  </button>
+  <button
+    onClick={() => setJobFilter("unbilled")}
+    className={`px-4 py-2 rounded-md ${jobFilter === "unbilled" ? "bg-orange-600 text-white" : "bg-gray-100"}`}
+  >
+    Unbilled ({jobs.filter(j => !j.invoiceId).length})
+  </button>
+  <button
+    onClick={() => setJobFilter("billed")}
+    className={`px-4 py-2 rounded-md ${jobFilter === "billed" ? "bg-green-600 text-white" : "bg-gray-100"}`}
+  >
+    Billed ({jobs.filter(j => j.invoiceId).length})
+  </button>
+</div>
 
       {/* Client Details Card */}
       <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8 mb-8">
@@ -72,9 +99,9 @@ const ClientDetails = () => {
             </h1>
             <p className="text-gray-500 mt-1">Client Details</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
+              className={`px-3 py-1 rounded-full h-fit text-sm font-medium ${
                 client.isActive
                   ? "bg-green-100 text-green-800"
                   : "bg-red-100 text-red-800"

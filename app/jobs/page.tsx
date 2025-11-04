@@ -140,13 +140,13 @@ const Jobs = () => {
                       <td className="p-4 text-gray-900 font-medium">
                         {job.challanNo || "-"} 
                       </td>
-                      <td className="p-4 text-gray-700">
+                      <td className="p-4 text-gray-700 text-nowrap">
                         {job.client?.name || "N/A"}
                       </td>
-                      <td className="p-4 text-gray-700">
+                      <td className="p-4 text-gray-700 text-nowrap">
                         {job.driver?.name || "N/A"}
                       </td>
-                      <td className="p-4 text-gray-700">
+                      <td className="p-4 text-gray-700 text-nowrap">
                         <div className="flex flex-col">
                           <span className="font-medium">
                             {job.vehicle?.registrationNo || "N/A"}

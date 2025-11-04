@@ -16,6 +16,7 @@ export interface Job {
   totalHours?: number;
   ratePerHour: number;
   amount: number;
+  invoiceId?: string;
   challanNo : string;
   status: string;
   notes?: string;

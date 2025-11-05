@@ -4,15 +4,37 @@ import { CreateJobSchema } from "@/lib/types";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
+  console.log("--------")
   try {
     const userId = await getUserFromRequest(request);
     if (!userId) {
       return errorResponse("Unauthorized", 401);
     }
+
+    // Get query parameters
+    const { searchParams } = new URL(request.url);
+    const clientId = searchParams.get("clientId");
+    const invoiceId = searchParams.get("invoiceId");
+    const status = searchParams.get("status");
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
     
     const jobs = await prisma.job.findMany({
       where: {
         userId,
+        // Filter by client if provided
+        ...(clientId && { clientId }),
+        // Filter by invoice status (null means unbilled)
+        ...(invoiceId === "null" ? { invoiceId: null } : invoiceId ? { invoiceId } : {}),
+        // Filter by job status
+        ...(status && { status: status as any }),
+        // Filter by date range
+        ...(startDate && endDate && {
+          date: {
+            gte: new Date(startDate),
+            lte: new Date(endDate),
+          },
+        }),
       },
       include: {
         client: {
@@ -53,7 +75,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        date: "desc",
       },
     });
     

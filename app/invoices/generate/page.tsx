@@ -29,6 +29,7 @@ const GenerateInvoice = () => {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<GenerateInvoiceForm>();
 
@@ -36,34 +37,66 @@ const GenerateInvoice = () => {
   const startDate = watch("startDate");
   const endDate = watch("endDate");
 
+  // Debug log to see when values change
   useEffect(() => {
+    console.log("Values changed:", { clientId, startDate, endDate });
+  }, [clientId, startDate, endDate]);
+
+  useEffect(() => {
+    console.log("Checking conditions...", {
+      hasClientId: !!clientId,
+      hasStartDate: !!startDate,
+      hasEndDate: !!endDate,
+      allPresent: !!(clientId && startDate && endDate)
+    });
+
     if (clientId && startDate && endDate) {
+      console.log("All conditions met, fetching jobs...");
       fetchUnbilledJobs();
     }
   }, [clientId, startDate, endDate]);
 
-  const fetchUnbilledJobs = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(
-        `/api/jobs?clientId=${clientId}&invoiceId=null&startDate=${startDate}&endDate=${endDate}&status=COMPLETED`,
-        { withCredentials: true }
-      );
-      setUnbilledJobs(response.data.data || []);
-    } catch (error) {
-      console.error("Error fetching unbilled jobs:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchUnbilledJobs = async () => {
+      console.log("-----------");
+      console.log("Fetching unbilled jobs with params:", {
+        clientId,
+        startDate,
+        endDate
+      });
+
+      try {
+        setLoading(true);
+        const url = `/api/jobs?clientId=${clientId}&invoiceId=null&startDate=${startDate}&endDate=${endDate}&status=COMPLETED`;
+        console.log("API URL:", url);
+
+        const response = await axios.get(url, {
+          withCredentials: true,
+        });
+
+        console.log("API Response:", response.data);
+
+        // Fix: Access the data correctly
+        const jobsData = response.data.data || response.data || [];
+        console.log("Fetched unbilled jobs:", jobsData);
+        setUnbilledJobs(jobsData);
+      } catch (error) {
+        console.error("Error fetching unbilled jobs:", error);
+        setUnbilledJobs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const onSubmit = async (data: GenerateInvoiceForm) => {
+    console.log("Submitting form with data:", data);
     try {
       const response = await axios.post("/api/invoices/generate", data, {
         withCredentials: true,
       });
+      console.log("Invoice generated:", response.data);
       router.push(`/invoices/${response.data.data.id}`);
     } catch (error: any) {
+      console.error("Error generating invoice:", error);
       alert(error.response?.data?.error || "Failed to generate invoice");
     }
   };
@@ -76,25 +109,19 @@ const GenerateInvoice = () => {
   const sgst = totalAmount * 0.09;
   const grandTotal = totalAmount + cgst + sgst;
 
-  // Quick date range helpers
+  // Quick date range helpers - Fixed to use setValue from react-hook-form
   const setCurrentMonth = () => {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-    const startInput = document.querySelector<HTMLInputElement>(
-      'input[name="startDate"]'
-    );
-    const endInput = document.querySelector<HTMLInputElement>(
-      'input[name="endDate"]'
-    );
+    const startDateStr = firstDay.toISOString().split("T")[0];
+    const endDateStr = lastDay.toISOString().split("T")[0];
 
-    if (startInput && endInput) {
-      startInput.value = firstDay.toISOString().split("T")[0];
-      endInput.value = lastDay.toISOString().split("T")[0];
-      startInput.dispatchEvent(new Event("input", { bubbles: true }));
-      endInput.dispatchEvent(new Event("input", { bubbles: true }));
-    }
+    console.log("Setting current month:", { startDateStr, endDateStr });
+
+    setValue("startDate", startDateStr);
+    setValue("endDate", endDateStr);
   };
 
   const setLastMonth = () => {
@@ -102,32 +129,35 @@ const GenerateInvoice = () => {
     const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
 
-    const startInput = document.querySelector<HTMLInputElement>(
-      'input[name="startDate"]'
-    );
-    const endInput = document.querySelector<HTMLInputElement>(
-      'input[name="endDate"]'
-    );
+    const startDateStr = firstDay.toISOString().split("T")[0];
+    const endDateStr = lastDay.toISOString().split("T")[0];
 
-    if (startInput && endInput) {
-      startInput.value = firstDay.toISOString().split("T")[0];
-      endInput.value = lastDay.toISOString().split("T")[0];
-      startInput.dispatchEvent(new Event("input", { bubbles: true }));
-      endInput.dispatchEvent(new Event("input", { bubbles: true }));
-    }
+    console.log("Setting last month:", { startDateStr, endDateStr });
+
+    setValue("startDate", startDateStr);
+    setValue("endDate", endDateStr);
   };
 
   return (
     <div className="p-8">
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 cursor-pointer"
       >
         <ArrowLeft size={20} />
         Back
       </button>
 
       <h1 className="text-3xl font-semibold mb-6">Generate Invoice</h1>
+
+      {/* Debug Info */}
+      <div className="mb-4 p-4 bg-gray-100 rounded text-sm">
+        <p><strong>Debug Info:</strong></p>
+        <p>Client ID: {clientId || "Not selected"}</p>
+        <p>Start Date: {startDate || "Not selected"}</p>
+        <p>End Date: {endDate || "Not selected"}</p>
+        <p>Unbilled Jobs: {unbilledJobs.length}</p>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Form */}
@@ -163,7 +193,7 @@ const GenerateInvoice = () => {
               <button
                 type="button"
                 onClick={setCurrentMonth}
-                className="flex-1 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                className="flex-1 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors cursor-pointer"
               >
                 <Calendar size={14} className="inline mr-1" />
                 Current Month
@@ -171,7 +201,7 @@ const GenerateInvoice = () => {
               <button
                 type="button"
                 onClick={setLastMonth}
-                className="flex-1 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                className="flex-1 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-md transition-colors cursor-pointer"
               >
                 <Calendar size={14} className="inline mr-1" />
                 Last Month
@@ -235,7 +265,7 @@ const GenerateInvoice = () => {
             <button
               type="submit"
               disabled={isSubmitting || unbilledJobs.length === 0}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSubmitting ? "Generating..." : "Generate Invoice"}
             </button>
@@ -252,7 +282,10 @@ const GenerateInvoice = () => {
             </div>
           ) : unbilledJobs.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No unbilled jobs found for the selected period.
+              {clientId && startDate && endDate 
+                ? "No unbilled jobs found for the selected period."
+                : "Please select client and date range to see jobs."
+              }
             </div>
           ) : (
             <>

@@ -44,7 +44,8 @@ const Invoices = () => {
         `/api/invoices${filter !== "all" ? `?status=${filter}` : ""}`,
         { withCredentials: true }
       );
-      setInvoices(response.data.data || []);
+      console.log("invoices",response)
+      setInvoices(response.data || []);
     } catch (error) {
       console.error("Error fetching invoices:", error);
     } finally {
@@ -114,7 +115,7 @@ const Invoices = () => {
               <thead>
                 <tr className="bg-gray-50 border-b-2 border-indigo-200">
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
-                    Invoice #
+                    Invoice Number
                   </th>
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
                     Client
@@ -166,12 +167,12 @@ const Invoices = () => {
                         )}
                       </div>
                     </td>
-                    <td className="p-4 text-gray-700">
-                      <div className="flex flex-col text-sm">
+                    <td className="p-4 text-gray-700 text-nowrap">
+                      <div className="flex gap-1 text-sm">
                         <span>
                           {new Date(invoice.startDate).toLocaleDateString()}
                         </span>
-                        <span className="text-gray-500">to</span>
+                        <span className="text-gray-500">-</span>
                         <span>
                           {new Date(invoice.endDate).toLocaleDateString()}
                         </span>

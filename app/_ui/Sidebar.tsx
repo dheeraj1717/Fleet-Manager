@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   Home,
   IdCard,
+  Receipt,
   Truck,
   Users,
 } from "lucide-react";
@@ -15,6 +16,7 @@ import { useEffect, useState } from "react";
 const menu = [
   { name: "Home", icon: Home, path: "/" },
   { name: "Clients", icon: Users, path: "/clients" },
+  { name: "Invoices", icon: Receipt, path: "/invoices" },
   { name: "Vehicles", icon: Truck, path: "/vehicles" },
   { name: "Drivers", icon: IdCard, path: "/drivers" },
   { name: "Jobs", icon: Briefcase, path: "/jobs" },

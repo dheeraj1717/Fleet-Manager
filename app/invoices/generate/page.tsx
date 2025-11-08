@@ -76,7 +76,7 @@ const GenerateInvoice = () => {
         console.log("API Response:", response.data);
 
         // Fix: Access the data correctly
-        const jobsData = response.data.data || response.data || [];
+        const jobsData = response.data.jobs || response.data || [];
         console.log("Fetched unbilled jobs:", jobsData);
         setUnbilledJobs(jobsData);
       } catch (error) {

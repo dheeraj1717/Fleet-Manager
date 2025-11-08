@@ -1,5 +1,11 @@
 "use client";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
 import { RefObject, useRef, useState, useEffect } from "react";
 import AddVehicles from "../_components/AddVehicles";
 import { useOnclickOutside } from "../hooks/useOnclickOutside";
@@ -7,6 +13,8 @@ import AddVehicleType from "../_components/AddVehicleType";
 import DeleteModal from "../_components/DeleteModal";
 import { useVehicleType } from "../hooks/useVehicletype";
 import { useVehicle } from "../hooks/useVehicle";
+import SearchBar from "../_components/SearchBar";
+import RenderPageNumbers from "../_components/RenderPageNumbers";
 
 const Vehicles = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,17 +25,17 @@ const Vehicles = () => {
   const { vehicleTypes, fetchVehicleTypes, addVehicleType } = useVehicleType();
 
   const { vehicles, fetchVehicles, total } = useVehicle();
-  console.log("-----",vehicles);
 
   // Pagination + Search states
-  const [page, setPage] = useState(1);
-  const [limit] = useState(10);
-  const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const limit = 10;
+  const totalPages = Math.ceil(total / limit);
 
   // Re-fetch when page/search changes
   useEffect(() => {
-    fetchVehicles(page, limit, search);
-  }, [page, search]);
+    fetchVehicles(currentPage, limit, searchTerm);
+  }, [currentPage, searchTerm]);
 
   const handleEdit = (item: any) => console.log("Edit:", item);
   const handleDelete = (item: any) => {
@@ -35,13 +43,15 @@ const Vehicles = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearch(e.target.value);
-    setPage(1); // reset to first page when searching
+  const handleSearch = (query: string) => {
+    setSearchTerm(query);
+    setCurrentPage(1);
   };
 
-  const totalPages = Math.ceil(total / limit);
-
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
   useOnclickOutside(addVehicleRef as RefObject<HTMLElement>, () =>
     setIsModalOpen(false)
   );
@@ -75,76 +85,159 @@ const Vehicles = () => {
       </div>
 
       {/* Search */}
-      <div className="mt-6 flex justify-end">
-        <input
-          type="text"
-          value={search}
-          onChange={handleSearchChange}
-          placeholder="Search by model or registration no."
-          className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 w-64"
+      <div className="max-w-sm mb-6">
+        <SearchBar
+          onSearch={handleSearch}
+          placeholder="Search by name or contact..."
         />
       </div>
 
-      {/* Vehicles Table */}
-      <div className="w-full mt-10 max-w-5xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-white border-b-2 border-indigo-200">
-                <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                  Model
-                </th>
-                <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                  Registration No.
-                </th>
-                <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                  Vehicle Type
-                </th>
-                <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                  Insurance Expiry
-                </th>
-                <th className="p-4 text-center text-sm font-semibold text-primary uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {vehicles.length > 0 ? (
-                vehicles.map((vehicle, i) => (
+      <div className="flex gap-6">
+        {/* Vehicles Table */}
+        <div className="w-full mt-10 max-w-5xl mx-auto px-4">
+          <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-white border-b-2 border-indigo-200">
+                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
+                    Model
+                  </th>
+                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
+                    Registration No.
+                  </th>
+                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
+                    Vehicle Type
+                  </th>
+                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
+                    Insurance Expiry
+                  </th>
+                  <th className="p-4 text-center text-sm font-semibold text-primary uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {vehicles.length > 0 ? (
+                  vehicles.map((vehicle, i) => (
+                    <tr
+                      key={vehicle.id}
+                      className={`transition-colors hover:bg-[#f6faff] ${
+                        i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      }`}
+                    >
+                      <td className="p-4 text-gray-900 font-medium">
+                        {vehicle.model}
+                      </td>
+                      <td className="p-4 text-gray-700">
+                        {vehicle.registrationNo}
+                      </td>
+                      <td className="p-3 text-gray-700">
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                          {vehicle.vehicleType}
+                        </span>
+                      </td>
+                      <td className="p-4 text-gray-700">
+                        {vehicle.insuranceExpiry
+                          ? new Date(
+                              vehicle.insuranceExpiry
+                            ).toLocaleDateString()
+                          : "-"}
+                      </td>
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleEdit(vehicle)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(vehicle)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="p-6 text-center text-gray-500 italic"
+                    >
+                      No vehicles found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {total > 0 && totalPages > 1 && (
+            <div className="flex justify-center items-center space-x-2 mt-4">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"
+              >
+                <ChevronLeftIcon className="w-5 h-5" />
+              </button>
+              <RenderPageNumbers
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"
+              >
+                <ChevronRightIcon className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Vehicle Types Table */}
+        <div className="mt-10 mx-auto px-4 min-w-xs">
+          <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-white border-b-2 border-indigo-200">
+                  <th className="p-4 text-sm font-semibold text-primary uppercase tracking-wider text-left">
+                    Type
+                  </th>
+                  <th className="p-4 text-sm font-semibold text-primary uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {vehicleTypes.map((type, i) => (
                   <tr
-                    key={vehicle.id}
+                    key={i}
                     className={`transition-colors hover:bg-[#f6faff] ${
                       i % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
                     <td className="p-4 text-gray-900 font-medium">
-                      {vehicle.model}
+                      {type.name}
                     </td>
-                    <td className="p-4 text-gray-700">
-                      {vehicle.registrationNo}
-                    </td>
-                    <td className="p-3 text-gray-700">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        {vehicle.vehicleType}
-                      </span>
-                    </td>
-                    <td className="p-4 text-gray-700">
-                      {vehicle.insuranceExpiry
-                        ? new Date(vehicle.insuranceExpiry).toLocaleDateString()
-                        : "-"}
-                    </td>
-                    <td className="p-4 text-center">
+                    <td className="p-4">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => handleEdit(vehicle)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                          onClick={() => handleEdit(type)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
                           title="Edit"
                         >
                           <Pencil size={18} />
                         </button>
                         <button
-                          onClick={() => handleDelete(vehicle)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                          onClick={() => handleDelete(type)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
                           title="Delete"
                         >
                           <Trash2 size={18} />
@@ -152,43 +245,11 @@ const Vehicles = () => {
                       </div>
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="p-6 text-center text-gray-500 italic"
-                  >
-                    No vehicles found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex justify-end items-center gap-4 mt-6">
-            <button
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span className="text-sm text-gray-600">
-              Page {page} of {totalPages}
-            </span>
-            <button
-              disabled={page === totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50"
-            >
-              Next
-            </button>
+                ))}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
       </div>
 
       {/* Modals */}

@@ -68,21 +68,41 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const isActive = searchParams.get("isActive");
+    const limit = searchParams.get("limit");
+    const offset = searchParams.get("offset");
+    const search = searchParams.get("search")?.trim() || "";
 
-    const drivers = await prisma.driver.findMany({
-      where: {
-        userId,
-        ...(isActive !== null && { isActive: isActive === "true" }),
-      },
-      orderBy: { name: "asc" },
+    const whereCondition: any = {
+      userId,
+      ...(isActive !== null && { isActive: isActive === "true" }),
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { contactNo: { contains: search, mode: "insensitive" } },
+        ],
+      }),
+    };
+
+    const [drivers, totalCount] = await Promise.all([
+      prisma.driver.findMany({
+        where: whereCondition,
+        orderBy: { name: "asc" },
+        ...(limit && { take: parseInt(limit) }),
+        ...(offset && { skip: parseInt(offset) }),
+      }),
+      prisma.driver.count({ where: whereCondition }),
+    ]);
+
+    return successResponse({
+      drivers,
+      totalCount,
     });
-
-    return successResponse(drivers);
   } catch (error) {
     console.error("Get drivers error:", error);
     return errorResponse("Failed to fetch drivers", 500);
   }
 }
+
 
 export async function DELETE(request: NextRequest) {
   try {

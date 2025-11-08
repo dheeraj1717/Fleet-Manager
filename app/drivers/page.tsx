@@ -1,24 +1,48 @@
 "use client";
-import { Plus, Pencil, Trash2 } from "lucide-react";
-import { RefObject, useRef, useState } from "react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
+import { RefObject, useRef, useState, useEffect } from "react";
 import { useOnclickOutside } from "../hooks/useOnclickOutside";
 import DeleteModal from "../_components/DeleteModal";
-import { Driver, useDriver } from "../hooks/useDriver";
+import { useDriver } from "../hooks/useDriver";
 import AddDriver from "../_components/AddDriver";
+import RenderPageNumbers from "../_components/RenderPageNumbers";
+import SearchBar from "../_components/SearchBar";
 
 const Drivers = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const addDriverRef = useRef<HTMLElement>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
-  const { drivers, loading, error, addDriver, deleteDriver } = useDriver();
+  const { drivers, loading, error, total, deleteDriver, fetchDrivers } = useDriver();
 
-  const fetchDrivers = async () => {
-    // This is handled by the hook automatically
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const limit = 10;
+  const totalPages = Math.ceil(total / limit);
+
+  // 🧠 Fetch drivers when page or search changes
+  useEffect(() => {
+    fetchDrivers(currentPage, limit, searchTerm);
+  }, [currentPage, searchTerm]);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchTerm(query);
+    setCurrentPage(1); // reset to page 1 on new search
   };
 
   const handleEdit = (item: any) => {
-    console.log(" Edit:", item);
+    console.log("Edit:", item);
   };
 
   const handleDelete = (item: any) => {
@@ -26,7 +50,7 @@ const Drivers = () => {
     setIsDeleteModalOpen(true);
   };
 
-  useOnclickOutside(addDriverRef as React.RefObject<HTMLElement>, () => {
+  useOnclickOutside(addDriverRef as RefObject<HTMLElement>, () => {
     setIsModalOpen(false);
   });
 
@@ -37,35 +61,35 @@ const Drivers = () => {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between w-full items-center">
+      {/* Header + Add Button */}
+      <div className="flex justify-between w-full items-center mb-8">
         <div>
           <h1 className="text-4xl font-semibold">Drivers</h1>
           <p className="text-base text-text-light">
             Manage your fleet drivers and their details.
           </p>
         </div>
-        <div className="flex gap-6">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex gap-1 items-center text-text-dark font-semibold py-2 px-4 border border-[#c6c6c6] rounded-md cursor-pointer hover:bg-gray-50 transition delay-100"
-          >
-            <Plus size={16} />
-            <span className="text-base font-semibold">Add Driver</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex gap-1 items-center text-text-dark font-semibold py-2 px-4 border border-[#c6c6c6] rounded-md cursor-pointer hover:bg-gray-50 transition delay-100"
+        >
+          <Plus size={16} />
+          <span className="text-base font-semibold">Add Driver</span>
+        </button>
+      </div>
+
+      {/* ✅ Search Bar */}
+      <div className="max-w-sm mb-6">
+        <SearchBar onSearch={handleSearch} placeholder="Search by name or contact..." />
       </div>
 
       {/* Drivers Table */}
-      <div className="w-full mt-20 max-w-6xl mx-auto px-4">
+      <div className="w-full max-w-6xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
           {loading ? (
-            <div className="p-8 text-center text-gray-500">
-              Loading drivers...
-            </div>
+            <div className="p-8 text-center text-gray-500">Loading drivers...</div>
           ) : error ? (
-            <div className="p-8 text-center text-red-500">
-              Error loading drivers
-            </div>
+            <div className="p-8 text-center text-red-500">Error loading drivers</div>
           ) : drivers.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               No drivers found. Add your first driver!
@@ -102,9 +126,7 @@ const Drivers = () => {
                       i % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
-                    <td className="p-4 text-gray-900 font-medium">
-                      {driver.name}
-                    </td>
+                    <td className="p-4 text-gray-900 font-medium">{driver.name}</td>
                     <td className="p-4 text-gray-700">{driver.contactNo}</td>
                     <td className="p-4 text-gray-700">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
@@ -145,12 +167,34 @@ const Drivers = () => {
         </div>
       </div>
 
+      {/* Pagination */}
+      {total > 0 && totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-2 mt-4">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <RenderPageNumbers
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <ChevronRightIcon className="w-5 h-5" />
+          </button>
+        </div>
+      )}
+
       {/* Add Driver Modal */}
       {isModalOpen && (
         <AddDriver
           ref={addDriverRef as RefObject<HTMLDivElement>}
           setIsModalOpen={setIsModalOpen}
-          addDriver={addDriver}
           fetchDrivers={fetchDrivers}
         />
       )}

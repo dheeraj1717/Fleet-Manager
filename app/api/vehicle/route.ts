@@ -1,4 +1,4 @@
-import { errorResponse, getUserFromRequest } from "@/lib/auth";
+import { errorResponse, getUserFromRequest, successResponse } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CreateVehicleSchema } from "@/lib/types";
 import { NextRequest } from "next/server";
@@ -52,24 +52,45 @@ export async function GET(request: NextRequest) {
     return errorResponse("Unauthorized", 401);
   }
 
+  const { searchParams } = new URL(request.url);
+  const limit = parseInt(searchParams.get("limit") || "10");
+  const offset = parseInt(searchParams.get("offset") || "0");
+  const search = searchParams.get("search") || "";
+
+  const whereCondition: any = {
+    ownerId: userId,
+  };
+
+  if (search) {
+    whereCondition.OR = [
+      { model: { contains: search, mode: "insensitive" } },
+      { registrationNo: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
   const vehicles = await prisma.vehicle.findMany({
-    where: {
-      ownerId: userId,
-    },
+    where: whereCondition,
     include: {
       vehicleType: {
-        select: {
-          name: true,
-        },
-      }
+        select: { name: true },
+      },
     },
+    skip: offset,
+    take: limit,
+    orderBy: { createdAt: "desc" },
   });
-const transformedVehicles = vehicles.map(vehicle => ({
+
+  const transformedVehicles = vehicles.map((vehicle) => ({
     ...vehicle,
-    vehicleType: vehicle.vehicleType.name
+    vehicleType: vehicle.vehicleType.name,
   }));
-  
-  return new Response(JSON.stringify(transformedVehicles), {
-    status: 200,
+
+  const total = await prisma.vehicle.count({
+    where: whereCondition,
+  });
+  return successResponse({
+    vehicles: transformedVehicles,
+    total
   });
 }
+

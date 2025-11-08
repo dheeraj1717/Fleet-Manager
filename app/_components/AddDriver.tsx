@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
-import { forwardRef } from "react";
+import { forwardRef, use } from "react";
+import { useDriver } from "../hooks/useDriver";
 
 export type DriverFormData = {
   name: string;
@@ -12,12 +13,11 @@ export type DriverFormData = {
 
 type AddDriverProps = {
   setIsModalOpen: (isOpen: boolean) => void;
-  addDriver: (data: DriverFormData) => Promise<void>;
   fetchDrivers: () => Promise<void>;
 };
 
 const AddDriver = forwardRef<HTMLDivElement, AddDriverProps>(
-  ({ setIsModalOpen, addDriver, fetchDrivers }, ref) => {
+  ({ setIsModalOpen, fetchDrivers }, ref) => {
     const {
       register,
       handleSubmit,
@@ -32,6 +32,8 @@ const AddDriver = forwardRef<HTMLDivElement, AddDriverProps>(
         joiningDate: "",
       },
     });
+
+    const {addDriver} = useDriver();
 
     const onSubmit = async (data: DriverFormData) => {
       try {

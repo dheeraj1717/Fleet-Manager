@@ -27,7 +27,9 @@ export const useJobs = () => {
       setLoading(false);
     }
   };
-
+useEffect(() => {
+  fetchJobs();
+},[])
   const addJob = async (jobData: any) => {
     await axios.post("/api/jobs", jobData, { withCredentials: true });
     await fetchJobs();

@@ -37,7 +37,7 @@ const Drivers = () => {
   };
 
   const handleSearch = (query: string) => {
-    setSearchTerm(query);
+    setSearchTerm(query.trim());
     setCurrentPage(1); // reset to page 1 on new search
   };
 

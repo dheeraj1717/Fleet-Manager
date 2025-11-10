@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10");
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    // ✅ Construct `where` safely
+  
     const where: any = {
       userId,
       ...(clientId && { clientId }),
@@ -32,7 +32,6 @@ export async function GET(request: NextRequest) {
       }),
     };
 
-    // ✅ Add proper OR search on nested relations
     if (search) {
       where.OR = [
         { challanNo: { contains: search, mode: "insensitive" } },

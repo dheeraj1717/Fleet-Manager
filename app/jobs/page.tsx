@@ -7,15 +7,15 @@ import {
   ChevronRightIcon,
 } from "lucide-react";
 import { RefObject, useRef, useState, useEffect } from "react";
-import AddJob from "../_components/AddJob";
 import { useOnclickOutside } from "../hooks/useOnclickOutside";
-import DeleteModal from "../_components/DeleteModal";
 import { useJobs } from "../hooks/useJobs";
 import { useClient } from "../hooks/useClient";
 import { useDriver } from "../hooks/useDriver";
 import { useVehicle } from "../hooks/useVehicle";
 import SearchBar from "../_components/SearchBar";
 import RenderPageNumbers from "../_components/RenderPageNumbers";
+import DeleteModal from "../_components/DeleteModal";
+import AddJob from "../_components/AddJob";
 
 const Jobs = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,18 +35,26 @@ const Jobs = () => {
   const limit = 10;
   const totalPages = Math.ceil(total / limit);
 
+  const handleSearch = (query: string) => {
+    setSearchTerm(query.trim());
+    setCurrentPage(1);
+  };
   useEffect(() => {
     fetchJobs(currentPage, limit, searchTerm);
   }, [currentPage, searchTerm]);
-
-  const handleSearch = (query: string) => {
-    setSearchTerm(query);
-    setCurrentPage(1);
+  const handleEdit = (item: any) => {
+    console.log("Edit:", item);
+    // TODO: Implement edit functionality
   };
-
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
+  };
+
+  const handleDelete = (item: any) => {
+    console.log("Delete:", item);
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
   };
 
   const handleDeleteJob = async (item: any) => {
@@ -186,13 +194,19 @@ const Jobs = () => {
                       </span>
                     </td>
                     <td className="p-4 text-center">
-                      <div className="flex justify-center gap-2">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-md">
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleEdit(job)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+                          title="Edit"
+                        >
                           <Pencil size={18} />
                         </button>
                         <button
-                          onClick={() => setItemToDelete(job)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-md"
+                          disabled={job.invoiceId != null}
+                          onClick={() => handleDelete(job)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer disabled:cursor-default disabled:hover:bg-red-50/10"
+                          title="Delete"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -226,6 +240,30 @@ const Jobs = () => {
               <ChevronRightIcon className="w-5 h-5" />
             </button>
           </div>
+        )}
+
+        {/* Add Job Modal */}
+        {isModalOpen && (
+          <AddJob
+            ref={addJobRef as RefObject<HTMLDivElement>}
+            setIsModalOpen={setIsModalOpen}
+            addJob={addJob}
+            fetchJobs={fetchJobs}
+            clients={clients || []}
+            drivers={drivers || []}
+            vehicles={vehicles || []}
+          />
+        )}
+
+        {/* Delete Modal */}
+        {isDeleteModalOpen && (
+          <DeleteModal
+            setIsModalOpen={setIsDeleteModalOpen}
+            onDelete={handleDeleteJob}
+            item={itemToDelete}
+            heading="Delete Job"
+            description="Are you sure you want to delete this job? This action cannot be undone."
+          />
         )}
       </div>
     </div>

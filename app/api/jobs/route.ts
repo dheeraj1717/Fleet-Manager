@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
         skip: offset,
         take: limit,
       }),
-      prisma.job.count({ where }),
+      prisma.job.count({ where:{userId} }),
     ]);
 
     return successResponse({ jobs, total });

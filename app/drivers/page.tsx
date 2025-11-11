@@ -26,7 +26,7 @@ const Drivers = () => {
   const limit = 10;
   const totalPages = Math.ceil(total / limit);
 
-  // 🧠 Fetch drivers when page or search changes
+  // Fetch drivers when page or search changes
   useEffect(() => {
     fetchDrivers(currentPage, limit, searchTerm);
   }, [currentPage, searchTerm]);
@@ -78,7 +78,7 @@ const Drivers = () => {
         </button>
       </div>
 
-      {/* ✅ Search Bar */}
+      {/* Search Bar */}
       <div className="max-w-sm mb-6">
         <SearchBar onSearch={handleSearch} placeholder="Search by name or contact..." />
       </div>

@@ -11,18 +11,32 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const isActive = searchParams.get('isActive');
+    const limit = searchParams.get("limit");
+    const offset = searchParams.get("offset");
+    const search = searchParams.get("search")||"";
 
-    const clients = await prisma.client.findMany({
-      where: {
-        userId,
-        ...(isActive !== null && { isActive: isActive === 'true' })
-      },
-      orderBy: {
-        name: 'asc'
-      }
-    });
+     const whereCondition: any = {
+      userId,
+      ...(isActive !== null && { isActive: isActive === "true" }),
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { contactNo: { contains: search, mode: "insensitive" } },
+        ],
+      }),
+    };
 
-    return successResponse(clients);
+    const [clients, totalCount] = await Promise.all([
+      prisma.client.findMany({
+     where: whereCondition,
+        orderBy: { name: "asc" },
+        ...(limit && { take: parseInt(limit) }),
+        ...(offset && { skip: parseInt(offset) }),
+      }),
+      prisma.client.count({where:{userId}})
+    ])
+
+    return successResponse({clients,totalCount});
 
   } catch (error) {
     console.error('Get clients error:', error);

@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
         ...(limit && { take: parseInt(limit) }),
         ...(offset && { skip: parseInt(offset) }),
       }),
-      prisma.driver.count({ where: {userId} }),
+      prisma.driver.count({ where: whereCondition }),
     ]);
 
     return successResponse({

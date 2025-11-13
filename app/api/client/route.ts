@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         ...(limit && { take: parseInt(limit) }),
         ...(offset && { skip: parseInt(offset) }),
       }),
-      prisma.client.count({where:{userId}})
+      prisma.client.count({where:whereCondition}),
     ])
 
     return successResponse({clients,totalCount});

@@ -113,7 +113,7 @@ const InvoiceDetails = () => {
       <div className="flex justify-between items-center mb-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 cursor-pointer"
         >
           <ArrowLeft size={20} />
           Back to Invoices
@@ -121,7 +121,7 @@ const InvoiceDetails = () => {
 
         <button
           onClick={() => setShowPrintModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors delay-100 cursor-pointer"
         >
           <Printer size={18} />
           Print / Download Invoice

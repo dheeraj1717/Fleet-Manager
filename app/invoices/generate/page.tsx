@@ -151,13 +151,13 @@ const GenerateInvoice = () => {
       <h1 className="text-3xl font-semibold mb-6">Generate Invoice</h1>
 
       {/* Debug Info */}
-      <div className="mb-4 p-4 bg-gray-100 rounded text-sm">
+      {/* <div className="mb-4 p-4 bg-gray-100 rounded text-sm">
         <p><strong>Debug Info:</strong></p>
         <p>Client ID: {clientId || "Not selected"}</p>
         <p>Start Date: {startDate || "Not selected"}</p>
         <p>End Date: {endDate || "Not selected"}</p>
         <p>Unbilled Jobs: {unbilledJobs.length}</p>
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Form */}

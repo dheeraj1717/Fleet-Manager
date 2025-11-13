@@ -1,56 +1,39 @@
 "use client";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, FileText, DollarSign, Calendar } from "lucide-react";
-import axios from "axios";
-
-interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  client: {
-    id: string;
-    name: string;
-    company?: string;
-  };
-  startDate: string;
-  endDate: string;
-  subtotal: number;
-  tax: number;
-  totalAmount: number;
-  paidAmount: number;
-  balanceAmount: number;
-  status: string;
-  createdAt: string;
-  _count: {
-    jobs: number;
-    payments: number;
-  };
-}
+import {
+  Plus,
+  FileText,
+  DollarSign,
+  Calendar,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "lucide-react";
+import { useInvoices } from "../hooks/useInvoices";
+import { useEffect, useState } from "react";
+import SearchBar from "../_components/SearchBar";
+import RenderPageNumbers from "../_components/RenderPageNumbers";
 
 const Invoices = () => {
   const router = useRouter();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { invoices, loading, filter, setFilter, total, fetchInvoices } =
+    useInvoices();
+  const limit = 10;
+  const totalPages = Math.ceil(total / limit);
 
   useEffect(() => {
-    fetchInvoices();
-  }, [filter]);
+    fetchInvoices(currentPage, limit, searchTerm);
+  }, [currentPage, searchTerm]);
 
-  const fetchInvoices = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(
-        `/api/invoices${filter !== "all" ? `?status=${filter}` : ""}`,
-        { withCredentials: true }
-      );
-      console.log("invoices",response)
-      setInvoices(response.data || []);
-    } catch (error) {
-      console.error("Error fetching invoices:", error);
-    } finally {
-      setLoading(false);
-    }
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchTerm(query.trim());
+    setCurrentPage(1); // reset to page 1 on new search
   };
 
   const getStatusBadge = (status: string) => {
@@ -77,34 +60,46 @@ const Invoices = () => {
         </div>
         <button
           onClick={() => router.push("/invoices/generate")}
-          className="flex gap-2 items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="flex gap-2 items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors delay-100 cursor-pointer"
         >
           <Plus size={18} />
           Generate Invoice
         </button>
       </div>
 
+      {/* Search Bar */}
+      <div className="max-w-sm my-5">
+        <SearchBar
+          onSearch={handleSearch}
+          placeholder="Search by name or contact..."
+        />
+      </div>
+
       {/* Filter Tabs */}
       <div className="flex gap-2 mb-6 border-b border-gray-200">
-        {["all", "DRAFT", "SENT", "PARTIAL", "PAID", "OVERDUE"].map((status) => (
-          <button
-            key={status}
-            onClick={() => setFilter(status)}
-            className={`px-4 py-2 font-medium transition-colors ${
-              filter === status
-                ? "text-blue-600 border-b-2 border-blue-600"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            {status === "all" ? "All" : status}
-          </button>
-        ))}
+        {["all", "DRAFT", "SENT", "PARTIAL", "PAID", "OVERDUE"].map(
+          (status) => (
+            <button
+              key={status}
+              onClick={() => setFilter(status)}
+              className={`px-4 py-2 font-medium transition-colors ${
+                filter === status
+                  ? "text-blue-600 border-b-2 border-blue-600"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              {status === "all" ? "All" : status}
+            </button>
+          )
+        )}
       </div>
 
       {/* Invoices List */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading invoices...</div>
+          <div className="p-8 text-center text-gray-500">
+            Loading invoices...
+          </div>
         ) : invoices.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             No invoices found. Generate your first invoice!
@@ -178,9 +173,7 @@ const Invoices = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="p-4 text-gray-700">
-                      {invoice._count.jobs}
-                    </td>
+                    <td className="p-4 text-gray-700">{invoice._count.jobs}</td>
                     <td className="p-4 text-gray-900 font-semibold">
                       ₹{invoice.totalAmount.toLocaleString()}
                     </td>
@@ -232,30 +225,62 @@ const Invoices = () => {
           </div>
         )}
       </div>
+      {total > 0 && totalPages > 1 && (
+        <div className="flex justify-center items-center space-x-2 mt-4">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <RenderPageNumbers
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"
+          >
+            <ChevronRightIcon className="w-5 h-5" />
+          </button>
+        </div>
+      )}
 
       {/* Summary Cards */}
       {!loading && invoices.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
           <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
             <p className="text-sm text-gray-600 mb-1">Total Invoices</p>
-            <p className="text-3xl font-bold text-gray-900">{invoices.length}</p>
+            <p className="text-3xl font-bold text-gray-900">
+              {invoices.length}
+            </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
             <p className="text-sm text-gray-600 mb-1">Total Amount</p>
             <p className="text-3xl font-bold text-blue-600">
-              ₹{invoices.reduce((sum, inv) => sum + inv.totalAmount, 0).toLocaleString()}
+              ₹
+              {invoices
+                .reduce((sum, inv) => sum + inv.totalAmount, 0)
+                .toLocaleString()}
             </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
             <p className="text-sm text-gray-600 mb-1">Paid</p>
             <p className="text-3xl font-bold text-green-600">
-              ₹{invoices.reduce((sum, inv) => sum + inv.paidAmount, 0).toLocaleString()}
+              ₹
+              {invoices
+                .reduce((sum, inv) => sum + inv.paidAmount, 0)
+                .toLocaleString()}
             </p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
             <p className="text-sm text-gray-600 mb-1">Pending</p>
             <p className="text-3xl font-bold text-orange-600">
-              ₹{invoices.reduce((sum, inv) => sum + inv.balanceAmount, 0).toLocaleString()}
+              ₹
+              {invoices
+                .reduce((sum, inv) => sum + inv.balanceAmount, 0)
+                .toLocaleString()}
             </p>
           </div>
         </div>

@@ -108,5 +108,11 @@ export function errorResponse(message: string, status: number = 400) {
 }
 
 export function successResponse(data: any, status: number = 200) {
-  return Response.json(data, { status });
+  const safeData = JSON.parse(
+    JSON.stringify(data, (_, value) =>
+      typeof value === "bigint" ? Number(value) : value
+    )
+  );
+  return Response.json(safeData, { status });
 }
+

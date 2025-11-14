@@ -118,8 +118,8 @@ const Jobs = () => {
             <table className="w-full text-nowrap">
               <thead>
                 <tr className="bg-white border-b-2 border-indigo-200">
-                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                    #
+                  <th className="p-4 text-left text-sm font-semibold text-primary tracking-wider">
+                    Sr. No
                   </th>
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                     Challan No.
@@ -142,9 +142,9 @@ const Jobs = () => {
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                     Amount
                   </th>
-                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
+                  {/* <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                     Status
-                  </th>
+                  </th> */}
                   <th className="p-4 text-center text-sm font-semibold text-primary uppercase tracking-wider">
                     Actions
                   </th>
@@ -190,7 +190,7 @@ const Jobs = () => {
                       ₹{Number(job.amount).toLocaleString()}
                     </td>
 
-                    <td className="p-4">
+                    {/* <td className="p-4">
                       <span
                         className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(
                           job.status
@@ -198,7 +198,7 @@ const Jobs = () => {
                       >
                         {job.status.replace("_", " ")}
                       </span>
-                    </td>
+                    </td> */}
 
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2">

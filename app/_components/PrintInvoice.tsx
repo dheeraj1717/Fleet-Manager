@@ -1,7 +1,6 @@
 "use client";
 import { useRef } from "react";
 import { Printer, X, Download } from "lucide-react";
-import html2pdf from "html2pdf.js";
 
 interface PrintInvoiceProps {
   invoice: any;
@@ -87,23 +86,7 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
   };
 
   const handleDownload = async () => {
-    const element = printRef.current;
-    if (!element) return;
-
-    const opt = {
-      margin: 10,
-      filename: `Invoice_${invoice.invoiceNumber}_${invoice.client.name}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    };
-
-    try {
-      await html2pdf().set(opt).from(element).save();
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      alert("Failed to generate PDF. Please try printing instead.");
-    }
+    alert("PDF download requires html2pdf.js library. Please use the Print option or integrate the library.");
   };
 
   const numberToWords = (num: number): string => {
@@ -199,21 +182,21 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
           <div className="flex gap-2">
             <button
               onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors cursor-pointer"
             >
               <Download size={18} />
               Download PDF
             </button>
             <button
               onClick={handlePrint}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
             >
               <Printer size={18} />
               Print
             </button>
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-2 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
             >
               <X size={24} />
             </button>
@@ -222,160 +205,7 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
 
         {/* Print Content */}
         <div ref={printRef} className="p-8">
-          {/* Page 1: Work Details */}
-          <div className="page mb-8">
-            <style>
-              {`
-                .work-details-page {
-                  border: 2px solid #000;
-                  padding: 20px;
-                  font-family: Arial, sans-serif;
-                }
-                .work-details-header {
-                  text-align: center;
-                  margin-bottom: 20px;
-                  border-bottom: 2px solid #000;
-                  padding-bottom: 10px;
-                }
-                .work-details-header h1 {
-                  font-size: 28px;
-                  margin-bottom: 5px;
-                  font-weight: bold;
-                }
-                .work-details-header p {
-                  font-size: 14px;
-                  margin: 2px 0;
-                }
-                .work-details-table {
-                  width: 100%;
-                  border-collapse: collapse;
-                  margin-top: 15px;
-                }
-                .work-details-table th,
-                .work-details-table td {
-                  border: 1px solid #000;
-                  padding: 8px 4px;
-                  text-align: center;
-                  font-size: 12px;
-                }
-                .work-details-table th {
-                  background-color: #f0f0f0;
-                  font-weight: bold;
-                }
-                .work-details-table td {
-                  vertical-align: middle;
-                }
-                .work-details-table .text-left {
-                  text-align: left;
-                  padding-left: 8px;
-                }
-                .work-details-table .text-right {
-                  text-align: right;
-                  padding-right: 8px;
-                }
-                .total-row {
-                  font-weight: bold;
-                  background-color: #f9f9f9;
-                }
-                .amount-words {
-                  margin-top: 15px;
-                  font-weight: bold;
-                  font-size: 13px;
-                }
-                .signature-section {
-                  margin-top: 60px;
-                  text-align: right;
-                }
-                .signature-line {
-                  display: inline-block;
-                  margin-top: 40px;
-                  border-top: 1px solid #000;
-                  padding-top: 5px;
-                  min-width: 200px;
-                  text-align: center;
-                }
-              `}
-            </style>
-
-            <div className="work-details-page">
-              <div className="work-details-header">
-                <h1>{userCompany.name}</h1>
-                <p>({invoice.client.company || invoice.client.name})</p>
-                <p style={{ fontWeight: "bold", marginTop: "10px" }}>
-                  Party Name - {invoice.client.name}
-                </p>
-                <p style={{ fontWeight: "bold" }}>Date Wise Work Details</p>
-              </div>
-
-              <table className="work-details-table">
-                <thead>
-                  <tr>
-                    <th rowSpan={2} style={{ width: "40px" }}>
-                      S.No
-                    </th>
-                    <th rowSpan={2} style={{ width: "90px" }}>
-                      Date
-                    </th>
-                    <th rowSpan={2} style={{ width: "70px" }}>
-                      Ch. No.
-                    </th>
-                    <th colSpan={2}>Item</th>
-                    <th rowSpan={2} style={{ width: "60px" }}>
-                      Rate
-                    </th>
-                    <th rowSpan={2} style={{ width: "80px" }}>
-                      Amount
-                    </th>
-                    <th rowSpan={2} style={{ width: "80px" }}>
-                      Remark
-                    </th>
-                  </tr>
-                  <tr>
-                    <th style={{ width: "180px" }}>Description</th>
-                    <th style={{ width: "50px" }}>
-                      Time
-                      <br />
-                      Hrs
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {invoice.jobs.map((job: any, index: number) => (
-                    <tr key={job.id}>
-                      <td>{index + 1}</td>
-                      <td>{new Date(job.date).toLocaleDateString("en-GB")}</td>
-                      <td>{job.challanNo}</td>
-                      <td className="text-left">
-                        {formatTime(job.startTime)}-{formatTime(job.endTime!)}
-                      </td>
-                      <td>{job.totalHours}</td>
-                      <td className="text-right">{job.ratePerHour}</td>
-                      <td className="text-right">{job.amount}</td>
-                      <td></td>
-                    </tr>
-                  ))}
-                  <tr className="total-row">
-                    <td colSpan={6} className="text-right" style={{ paddingRight: "8px" }}>
-                      Total
-                    </td>
-                    <td className="text-right">{invoice.subtotal}</td>
-                    <td></td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <div className="amount-words">
-                {numberToWords(Math.floor(invoice.subtotal))} Rupees Only
-              </div>
-
-              <div className="signature-section">
-                <div>{userCompany.name}</div>
-                <div className="signature-line">Authorised Signature</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Page 2: Tax Invoice */}
+          {/* Page 1: Tax Invoice */}
           <div className="page">
             <style>
               {`
@@ -474,8 +304,6 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
                   position: absolute;
                   top: 20px;
                   right: 20px;
-                  border: 1px solid #000;
-                  padding: 5px 10px;
                   font-size: 11px;
                   background-color: white;
                 }
@@ -631,6 +459,159 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
                 >
                   Authorised Signatory
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Page 2: Work Details */}
+          <div className="page mb-8">
+            <style>
+              {`
+                .work-details-page {
+                  border: 2px solid #000;
+                  padding: 20px;
+                  font-family: Arial, sans-serif;
+                }
+                .work-details-header {
+                  text-align: center;
+                  margin-bottom: 20px;
+                  border-bottom: 2px solid #000;
+                  padding-bottom: 10px;
+                }
+                .work-details-header h1 {
+                  font-size: 28px;
+                  margin-bottom: 5px;
+                  font-weight: bold;
+                }
+                .work-details-header p {
+                  font-size: 14px;
+                  margin: 2px 0;
+                }
+                .work-details-table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  margin-top: 15px;
+                }
+                .work-details-table th,
+                .work-details-table td {
+                  border: 1px solid #000;
+                  padding: 8px 4px;
+                  text-align: center;
+                  font-size: 12px;
+                }
+                .work-details-table th {
+                  background-color: #f0f0f0;
+                  font-weight: bold;
+                }
+                .work-details-table td {
+                  vertical-align: middle;
+                }
+                .work-details-table .text-left {
+                  text-align: left;
+                  padding-left: 8px;
+                }
+                .work-details-table .text-right {
+                  text-align: right;
+                  padding-right: 8px;
+                }
+                .total-row {
+                  font-weight: bold;
+                  background-color: #f9f9f9;
+                }
+                .amount-words {
+                  margin-top: 15px;
+                  font-weight: bold;
+                  font-size: 13px;
+                }
+                .signature-section {
+                  margin-top: 60px;
+                  text-align: right;
+                }
+                .signature-line {
+                  display: inline-block;
+                  margin-top: 40px;
+                  border-top: 1px solid #000;
+                  padding-top: 5px;
+                  min-width: 200px;
+                  text-align: center;
+                }
+              `}
+            </style>
+
+            <div className="work-details-page">
+              <div className="work-details-header">
+                <h1>{userCompany.name}</h1>
+                <p>({invoice.client.company || invoice.client.name})</p>
+                <p style={{ fontWeight: "bold", marginTop: "10px" }}>
+                  Party Name - {invoice.client.name}
+                </p>
+                <p style={{ fontWeight: "bold" }}>Date Wise Work Details</p>
+              </div>
+
+              <table className="work-details-table">
+                <thead>
+                  <tr>
+                    <th rowSpan={2} style={{ width: "40px" }}>
+                      S.No
+                    </th>
+                    <th rowSpan={2} style={{ width: "90px" }}>
+                      Date
+                    </th>
+                    <th rowSpan={2} style={{ width: "70px" }}>
+                      Ch. No.
+                    </th>
+                    <th colSpan={2}>Item</th>
+                    <th rowSpan={2} style={{ width: "60px" }}>
+                      Rate
+                    </th>
+                    <th rowSpan={2} style={{ width: "80px" }}>
+                      Amount
+                    </th>
+                    <th rowSpan={2} style={{ width: "80px" }}>
+                      Remark
+                    </th>
+                  </tr>
+                  <tr>
+                    <th style={{ width: "180px" }}>Description</th>
+                    <th style={{ width: "50px" }}>
+                      Time
+                      <br />
+                      Hrs
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoice.jobs.map((job: any, index: number) => (
+                    <tr key={job.id}>
+                      <td>{index + 1}</td>
+                      <td>{new Date(job.date).toLocaleDateString("en-GB")}</td>
+                      <td>{job.challanNo}</td>
+                      <td className="text-left">
+                        {formatTime(job.startTime)}-{formatTime(job.endTime!)}
+                      </td>
+                      <td>{job.totalHours}</td>
+                      <td className="text-right">{job.ratePerHour}</td>
+                      <td className="text-right">{job.amount}</td>
+                      <td></td>
+                    </tr>
+                  ))}
+                  <tr className="total-row">
+                    <td colSpan={6} className="text-right" style={{ paddingRight: "8px" }}>
+                      Total
+                    </td>
+                    <td className="text-right">{invoice.subtotal}</td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div className="amount-words">
+                {numberToWords(Math.floor(invoice.subtotal))} Rupees Only
+              </div>
+
+              <div className="signature-section">
+                <div>{userCompany.name}</div>
+                <div className="signature-line">Authorised Signature</div>
               </div>
             </div>
           </div>

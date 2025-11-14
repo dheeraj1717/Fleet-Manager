@@ -1,9 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Printer } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useClientJobs } from "@/app/hooks/useClientJobs";
-import PrintBill from "@/app/_components/Printbill";
 
 const ClientDetails = () => {
   const params = useParams();
@@ -119,13 +118,13 @@ const ClientDetails = () => {
             >
               {client.isActive ? "Active" : "Inactive"}
             </span>
-            <button
+            {/* <button
               onClick={() => setShowPrintModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
               <Printer size={18} />
               Print Bill
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -271,14 +270,14 @@ const ClientDetails = () => {
       </div>
 
       {/* Print Modal */}
-      {showPrintModal && (
+      {/* {showPrintModal && (
         <PrintBill
           client={client}
           jobs={jobs}
           onClose={() => setShowPrintModal(false)}
           userCompany={userCompany}
         />
-      )}
+      )} */}
     </div>
   );
 };

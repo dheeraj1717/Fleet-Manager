@@ -2,6 +2,29 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
+export interface CreateJobData {
+  clientId: string;
+  driverId: string;
+  vehicleId: string;
+  vehicleTypeId: string;
+
+  challanNo: string;
+  location: string;
+
+  date: string;
+  startTime: string;
+  endTime: string;
+
+  totalHours: number;
+  ratePerHour: number;
+  amount: number;
+
+  status: "COMPLETED" | "PENDING" | "IN_PROGRESS" | "CANCELLED";
+
+  notes?: string;
+}
+
+
 export const useJobs = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [total, setTotal] = useState(0);

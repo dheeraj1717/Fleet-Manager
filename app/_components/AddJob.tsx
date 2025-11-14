@@ -5,7 +5,7 @@ import { CreateJobData } from "../hooks/useJobs";
 
 type AddJobProps = {
   setIsModalOpen: (isOpen: boolean) => void;
-  addJob: (data: CreateJobData) => Promise<void>;
+  addJob: (data: any) => Promise<void>;
   fetchJobs: () => Promise<void>;
   clients: Array<{ id: number; name: string }>;
   drivers: Array<{ id: number; name: string }>;

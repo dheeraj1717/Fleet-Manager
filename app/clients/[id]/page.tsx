@@ -10,13 +10,15 @@ const ClientDetails = () => {
   const router = useRouter();
   const { client, jobs, loading, error } = useClientJobs(params.id);
   const [showPrintModal, setShowPrintModal] = useState(false);
-  const [jobFilter, setJobFilter] = useState<"all" | "billed" | "unbilled">("all");
+  const [jobFilter, setJobFilter] = useState<"all" | "billed" | "unbilled">(
+    "all"
+  );
 
-  const filteredJobs = jobs.filter(job => {
-  if (jobFilter === "billed") return job.invoiceId !== null;
-  if (jobFilter === "unbilled") return job.invoiceId === null;
-  return true;
-});
+  const filteredJobs = jobs.filter((job) => {
+    if (jobFilter === "billed") return job.invoiceId !== null;
+    if (jobFilter === "unbilled") return job.invoiceId === null;
+    return true;
+  });
 
   // Your company details - Replace with actual data or fetch from API
   const userCompany = {
@@ -61,7 +63,7 @@ const ClientDetails = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-2 sm:p-4 md:p-8">
       <button
         onClick={() => router.back()}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 cursor-pointer"
@@ -70,36 +72,44 @@ const ClientDetails = () => {
         <span>Back to Clients</span>
       </button>
       <div className="flex gap-2 mb-4">
-  <button
-    onClick={() => setJobFilter("all")}
-    className={`px-4 py-2 rounded-md ${jobFilter === "all" ? "bg-blue-600 text-white" : "bg-gray-100"}`}
-  >
-    All Jobs
-  </button>
-  <button
-    onClick={() => setJobFilter("unbilled")}
-    className={`px-4 py-2 rounded-md ${jobFilter === "unbilled" ? "bg-orange-600 text-white" : "bg-gray-100"}`}
-  >
-    Unbilled ({jobs.filter(j => !j.invoiceId).length})
-  </button>
-  <button
-    onClick={() => setJobFilter("billed")}
-    className={`px-4 py-2 rounded-md ${jobFilter === "billed" ? "bg-green-600 text-white" : "bg-gray-100"}`}
-  >
-    Billed ({jobs.filter(j => j.invoiceId).length})
-  </button>
-</div>
+        <button
+          onClick={() => setJobFilter("all")}
+          className={`px-4 py-2 rounded-md ${
+            jobFilter === "all" ? "bg-blue-600 text-white" : "bg-gray-100"
+          }`}
+        >
+          All Jobs
+        </button>
+        <button
+          onClick={() => setJobFilter("unbilled")}
+          className={`px-4 py-2 rounded-md ${
+            jobFilter === "unbilled"
+              ? "bg-orange-600 text-white"
+              : "bg-gray-100"
+          }`}
+        >
+          Unbilled ({jobs.filter((j) => !j.invoiceId).length})
+        </button>
+        <button
+          onClick={() => setJobFilter("billed")}
+          className={`px-4 py-2 rounded-md ${
+            jobFilter === "billed" ? "bg-green-600 text-white" : "bg-gray-100"
+          }`}
+        >
+          Billed ({jobs.filter((j) => j.invoiceId).length})
+        </button>
+      </div>
 
       {/* Client Details Card */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8 mb-8">
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h1 className="text-3xl font-semibold text-gray-900">
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-2 sm:p-4 md:p-8 mb-8">
+        <div className="flex flex-col-reverse sm:flex-row justify-between items-start mb-6">
+          <div className="mt-3 sm:mt-0">
+            <h1 className="text-xl sm:text-3xl font-semibold text-gray-900">
               {client.name}
             </h1>
             <p className="text-gray-500 mt-1">Client Details</p>
           </div>
-          <div className="flex gap-3 items-center">
+          <div className="flex gap-3 items-center mt-2 sm:mt-0">
             <span
               className={`px-3 py-1 rounded-full h-fit text-sm font-medium ${
                 client.isActive
@@ -119,7 +129,7 @@ const ClientDetails = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
           <div>
             <label className="text-sm font-medium text-gray-500">
               Contact Number
@@ -149,7 +159,7 @@ const ClientDetails = () => {
       </div>
 
       {/* Jobs Section */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8">
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-2 sm:p-4 md:p-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-gray-900">Jobs</h2>
           <span className="text-sm text-gray-500">
@@ -165,7 +175,7 @@ const ClientDetails = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-gray-50 border-b-2 border-indigo-200">
+                <tr className="bg-gray-50 border-b-2 border-indigo-200 text-nowrap">
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                     S.No
                   </th>
@@ -190,33 +200,35 @@ const ClientDetails = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-  {jobs.map((job, i) => (
-    <tr
-      key={job.id}
-      className={`transition-colors hover:bg-[#f6faff] ${
-        i % 2 === 0 ? "bg-white" : "bg-gray-50"
-      }`}
-    >
-      <td className="p-4 text-gray-900 font-medium">{i + 1}</td>
-      <td className="p-4 text-gray-700">
-        {new Date(job.date).toLocaleDateString()}
-      </td>
-      <td className="p-4 text-gray-700">{job.challanNo}</td>
-      <td className="p-4 text-gray-700">
-        {formatTime(job.startTime)} - {formatTime(job.endTime!)}
-      </td>
-      <td className="p-4 text-gray-700">
-        {job.totalHours! % 1 === 0 ? job.totalHours!.toFixed(0) : job.totalHours!.toFixed(1)}
-      </td>
-      <td className="p-4 text-gray-700">
-        ₹{job.ratePerHour.toFixed(0)}
-      </td>
-      <td className="p-4 text-gray-700 font-medium">
-        ₹{job.amount.toFixed(0)}
-      </td>
-    </tr>
-  ))}
-</tbody>
+                {jobs.map((job, i) => (
+                  <tr
+                    key={job.id}
+                    className={`transition-colors hover:bg-[#f6faff] ${
+                      i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                    }`}
+                  >
+                    <td className="p-4 text-gray-900 font-medium">{i + 1}</td>
+                    <td className="p-4 text-gray-700">
+                      {new Date(job.date).toLocaleDateString()}
+                    </td>
+                    <td className="p-4 text-gray-700">{job.challanNo}</td>
+                    <td className="p-4 text-gray-700 text-nowrap">
+                      {formatTime(job.startTime)} - {formatTime(job.endTime!)}
+                    </td>
+                    <td className="p-4 text-gray-700">
+                      {job.totalHours! % 1 === 0
+                        ? job.totalHours!.toFixed(0)
+                        : job.totalHours!.toFixed(1)}
+                    </td>
+                    <td className="p-4 text-gray-700">
+                      ₹{job.ratePerHour.toFixed(0)}
+                    </td>
+                    <td className="p-4 text-gray-700 font-medium">
+                      ₹{job.amount.toFixed(0)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           </div>
         )}

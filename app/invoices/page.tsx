@@ -50,17 +50,17 @@ const Invoices = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="p-2 sm:p-4 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between sm:items-center mb-8">
         <div>
-          <h1 className="text-4xl font-semibold">Invoices</h1>
+          <h1 className="text-xl sm:text-4xl font-semibold">Invoices</h1>
           <p className="text-base text-gray-500">
             Manage client invoices and payments
           </p>
         </div>
         <button
           onClick={() => router.push("/invoices/generate")}
-          className="flex gap-2 items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors delay-100 cursor-pointer"
+          className="flex gap-2 items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors delay-100 cursor-pointer mt-4 sm:mt-0 w-fit"
         >
           <Plus size={18} />
           Generate Invoice
@@ -76,7 +76,7 @@ const Invoices = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 mb-6 border-b border-gray-200">
+      <div className="flex gap-2 mb-6 border-b border-gray-200 overflow-auto">
         {["all", "DRAFT", "SENT", "PARTIAL", "PAID", "OVERDUE"].map(
           (status) => (
             <button
@@ -152,7 +152,7 @@ const Invoices = () => {
                     </td>
                     <td className="p-4">
                       <div className="flex flex-col">
-                        <span className="font-medium text-gray-900">
+                        <span className="font-medium text-gray-900 text-nowrap">
                           {invoice.client.name}
                         </span>
                         {invoice.client.company && (

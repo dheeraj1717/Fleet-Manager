@@ -44,7 +44,7 @@ const Sidebar = () => {
   return (
     <div
       className={`bg-white border-r border-gray-200 min-h-screen transition-all duration-300 ease-in-out ${
-        isCollapsed ? "w-16" : "w-64"
+        isCollapsed ? "w-12" : "w-64"
       }`}
     >
       {/* Header */}
@@ -63,7 +63,7 @@ const Sidebar = () => {
         >
           <ChevronLeft
             size={20}
-            className={`text-gray-600 transition-transform duration-300 ${
+            className={`text-gray-600 transition-transform duration-300 cursor-pointer ${
               isCollapsed ? "rotate-180" : ""
             }`}
           />
@@ -80,7 +80,7 @@ const Sidebar = () => {
             <Link
               href={item.path}
               key={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+              className={`flex items-center gap-3 py-2.5 rounded-lg transition-all duration-200 group ${isCollapsed ? "" : "px-3"} ${
                 isActive
                   ? "bg-blue-50 text-blue-600"
                   : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"

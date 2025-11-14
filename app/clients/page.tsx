@@ -61,10 +61,10 @@ const Clients = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between w-full items-center">
+    <div className="p-2 sm:p-4 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between w-full sm:items-center">
         <div>
-          <h1 className="text-4xl font-semibold">Clients</h1>
+          <h1 className="text-2xl sm:text-4xl font-semibold">Clients</h1>
           <p className="text-base text-text-light">
             Manage your clients and their contact information.
           </p>
@@ -72,7 +72,7 @@ const Clients = () => {
         <div className="flex gap-6">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex gap-1 items-center text-text-dark font-semibold py-2 px-4 border border-[#c6c6c6] rounded-md cursor-pointer hover:bg-gray-50 transition delay-100"
+            className="flex gap-1 items-center text-text-dark font-semibold py-2 px-4 border border-[#c6c6c6] rounded-md cursor-pointer hover:bg-gray-50 transition delay-100 mt-4 sm:mt-0"
           >
             <Plus size={16} />
             <span className="text-base font-semibold">Add Client</span>
@@ -86,8 +86,8 @@ const Clients = () => {
       </div>
 
       {/* Clients Table */}
-      <div className="w-full mt-10 max-w-6xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+      <div className="w-full mt-10 max-w-6xl mx-auto sm:px-4">
+        <div className="bg-white rounded-lg shadow-md overflow-auto border border-gray-200">
           {loading ? (
             <div className="p-8 text-center text-gray-500">Loading clients...</div>
           ) : error ? (
@@ -99,7 +99,7 @@ const Clients = () => {
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="bg-white border-b-2 border-indigo-200">
+                <tr className="bg-white border-b-2 border-indigo-200 text-nowrap">
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                     Name
                   </th>
@@ -129,7 +129,7 @@ const Clients = () => {
                       i % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
-                    <td className="p-4 text-gray-900 font-medium">
+                    <td className="p-4 text-gray-900 font-medium text-nowrap">
                       {client.name}
                     </td>
                     <td className="p-4 text-gray-700">{client.contactNo}</td>

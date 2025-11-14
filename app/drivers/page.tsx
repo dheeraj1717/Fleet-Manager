@@ -19,14 +19,14 @@ const Drivers = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const addDriverRef = useRef<HTMLElement>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
-  const { drivers, loading, error, total, deleteDriver, fetchDrivers } = useDriver();
+  const { drivers, loading, error, total, deleteDriver, fetchDrivers } =
+    useDriver();
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const limit = 10;
   const totalPages = Math.ceil(total / limit);
 
-  // Fetch drivers when page or search changes
   useEffect(() => {
     fetchDrivers(currentPage, limit, searchTerm);
   }, [currentPage, searchTerm]);
@@ -38,7 +38,7 @@ const Drivers = () => {
 
   const handleSearch = (query: string) => {
     setSearchTerm(query.trim());
-    setCurrentPage(1); // reset to page 1 on new search
+    setCurrentPage(1);
   };
 
   const handleEdit = (item: any) => {
@@ -60,18 +60,19 @@ const Drivers = () => {
   };
 
   return (
-    <div className="p-8">
-      {/* Header + Add Button */}
-      <div className="flex justify-between w-full items-center mb-8">
+    <div className="p-2 sm:p-4 md:p-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between w-full sm:items-center">
         <div>
-          <h1 className="text-4xl font-semibold">Drivers</h1>
+          <h1 className="text-2xl sm:text-4xl font-semibold">Drivers</h1>
           <p className="text-base text-text-light">
             Manage your fleet drivers and their details.
           </p>
         </div>
+
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex gap-1 items-center text-text-dark font-semibold py-2 px-4 border border-[#c6c6c6] rounded-md cursor-pointer hover:bg-gray-50 transition delay-100"
+          className="flex gap-1 items-center text-text-dark font-semibold py-2 px-4 border border-[#c6c6c6] rounded-md cursor-pointer hover:bg-gray-50 transition delay-100 mt-4 sm:mt-0 w-fit"
         >
           <Plus size={16} />
           <span className="text-base font-semibold">Add Driver</span>
@@ -79,17 +80,22 @@ const Drivers = () => {
       </div>
 
       {/* Search Bar */}
-      <div className="max-w-sm mb-6">
-        <SearchBar onSearch={handleSearch} placeholder="Search by name or contact..." />
+      <div className="max-w-sm mt-6">
+        <SearchBar
+          onSearch={handleSearch}
+          placeholder="Search by name or contact..."
+        />
       </div>
 
-      {/* Drivers Table */}
-      <div className="w-full max-w-6xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+      {/* Table */}
+      <div className="w-full mt-10 max-w-6xl mx-auto sm:px-4">
+        <div className="bg-white rounded-lg shadow-md overflow-auto border border-gray-200">
           {loading ? (
             <div className="p-8 text-center text-gray-500">Loading drivers...</div>
           ) : error ? (
-            <div className="p-8 text-center text-red-500">Error loading drivers</div>
+            <div className="p-8 text-center text-red-500">
+              Error loading drivers
+            </div>
           ) : drivers.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               No drivers found. Add your first driver!
@@ -97,7 +103,7 @@ const Drivers = () => {
           ) : (
             <table className="w-full">
               <thead>
-                <tr className="bg-white border-b-2 border-indigo-200">
+                <tr className="bg-white border-b-2 border-indigo-200 text-nowrap">
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                     Name
                   </th>
@@ -118,11 +124,12 @@ const Drivers = () => {
                   </th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-gray-200">
                 {drivers.map((driver: any, i: number) => (
                   <tr
                     key={driver.id}
-                    className={`transition-colors hover:bg-[#f6faff] ${
+                    className={`transition-colors cursor-pointer hover:bg-[#f6faff] ${
                       i % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
@@ -146,14 +153,12 @@ const Drivers = () => {
                         <button
                           onClick={() => handleEdit(driver)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
-                          title="Edit"
                         >
                           <Pencil size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(driver)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
-                          title="Delete"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -176,11 +181,13 @@ const Drivers = () => {
           >
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
+
           <RenderPageNumbers
             currentPage={currentPage}
             totalPages={totalPages}
             onPageChange={handlePageChange}
           />
+
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"

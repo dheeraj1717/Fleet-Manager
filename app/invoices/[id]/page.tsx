@@ -109,8 +109,8 @@ const InvoiceDetails = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-2 sm:p-4 md:p-8">
+      <div className="flex flex-col md:flex-row justify-between sm:items-center mb-6">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900 cursor-pointer"
@@ -121,7 +121,7 @@ const InvoiceDetails = () => {
 
         <button
           onClick={() => setShowPrintModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors delay-100 cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors delay-100 cursor-pointer w-fit mt-4 md:mt-0"
         >
           <Printer size={18} />
           Print / Download Invoice
@@ -132,7 +132,7 @@ const InvoiceDetails = () => {
       <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8 mb-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-base sm:text-3xl font-bold text-gray-900">
               Invoice #{invoice.invoiceNumber}
             </h1>
             <p className="text-gray-500 mt-1">
@@ -219,12 +219,12 @@ const InvoiceDetails = () => {
       </div>
 
       {/* Jobs Table */}
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
         <h3 className="text-xl font-semibold mb-4">Jobs Included</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b-2 border-indigo-200">
+              <tr className="bg-gray-50 border-b-2 border-indigo-200 text-nowrap">
                 <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
                   S.No
                 </th>
@@ -284,12 +284,12 @@ const InvoiceDetails = () => {
         </div>
       </div>
       {invoice.payments && invoice.payments.length > 0 && (
-  <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 mt-6">
+  <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6 mt-6">
     <h3 className="text-xl font-semibold mb-4">Payment History</h3>
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="bg-gray-50 border-b-2 border-indigo-200">
+          <tr className="bg-gray-50 border-b-2 border-indigo-200 text-nowrap">
             <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
               Date
             </th>

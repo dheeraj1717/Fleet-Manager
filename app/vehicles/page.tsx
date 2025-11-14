@@ -72,16 +72,16 @@ const Vehicles = () => {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-2 sm:p-4 md:p-8">
       {/* Header */}
-      <div className="flex justify-between w-full items-center">
+      <div className="flex flex-col md:flex-row justify-between w-full sm:items-center">
         <div>
-          <h1 className="text-4xl font-semibold">Vehicles</h1>
+          <h1 className="text-2xl sm:text-4xl font-semibold">Vehicles</h1>
           <p className="text-base text-text-light">
             Manage your fleet vehicles and types.
           </p>
         </div>
-        <div className="flex gap-6">
+        <div className="flex gap-6 mt-4 md:mt-0">
           <button
             onClick={() => setIsModalOpen(true)}
             className="flex gap-1 items-center text-text-dark font-semibold py-2 px-2 border border-[#c6c6c6] rounded-md cursor-pointer hover:bg-gray-50 transition delay-100"
@@ -107,9 +107,9 @@ const Vehicles = () => {
         />
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex flex-col md:flex-row gap-6">
         {/* Vehicles Table */}
-        <div className="w-full mt-10 max-w-5xl mx-auto px-4">
+        <div className="w-full mt-10 max-w-5xl mx-auto sm:px-4 overflow-auto">
           <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
             {vehicleLoading ? (
               <div className="p-8 text-center text-gray-500">
@@ -126,7 +126,7 @@ const Vehicles = () => {
             ) : (
               <table className="w-full">
                 <thead>
-                  <tr className="bg-white border-b-2 border-indigo-200">
+                  <tr className="bg-white border-b-2 border-indigo-200 text-nowrap">
                     <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                       Model
                     </th>
@@ -152,7 +152,7 @@ const Vehicles = () => {
                         i % 2 === 0 ? "bg-white" : "bg-gray-50"
                       }`}
                     >
-                      <td className="p-4 text-gray-900 font-medium">
+                      <td className="p-4 text-gray-900 font-medium text-nowrap">
                         {vehicle.model}
                       </td>
                       <td className="p-4 text-gray-700">
@@ -218,7 +218,7 @@ const Vehicles = () => {
         </div>
 
         {/* Vehicle Types Table */}
-        <div className="mt-10 mx-auto px-4 min-w-xs">
+        <div className="md:mt-10 mx-auto sm:px-4 min-w-sm sm:min-w-xs overflow-auto">
           <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
             {typeLoading ? (
               <div className="p-8 text-center text-gray-500">

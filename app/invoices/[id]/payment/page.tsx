@@ -61,7 +61,7 @@ const AddPayment = () => {
       });
       const invoiceData = response.data.data || response.data;
       setInvoice(invoiceData);
-      
+
       // Set default amount to balance amount
       setValue("amount", invoiceData.balanceAmount);
     } catch (error) {
@@ -129,7 +129,7 @@ const AddPayment = () => {
   const remainingAfterPayment = invoice.balanceAmount - (Number(amount) || 0);
 
   return (
-    <div className="p-8 max-w-3xl mx-auto">
+    <div className="p-2 sm:p-4 md:p-8 max-w-3xl mx-auto">
       <button
         onClick={() => router.back()}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 cursor-pointer"
@@ -138,22 +138,26 @@ const AddPayment = () => {
         Back to Invoice
       </button>
 
-      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8">
-        <h1 className="text-3xl font-semibold mb-6">Record Payment</h1>
+      <div className="bg-white rounded-lg shadow-md border border-gray-200 p-2 sm:p-4 md:p-8">
+        <h1 className="text-xl sm:text-3xl font-semibold pb-3 sm:mb-6 text-center sm:text-left">
+          Record Payment
+        </h1>
 
         {/* Invoice Info */}
         <div className="mb-6 p-4 bg-gray-50 rounded-lg">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-600">Invoice Number</p>
-              <p className="text-lg font-semibold">{invoice.invoiceNumber}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Client</p>
-              <p className="text-lg font-semibold">
-                {invoice.client.name}
-                {invoice.client.company && ` (${invoice.client.company})`}
-              </p>
+            <div className="col-span-2">
+              <div>
+                <p className="text-sm text-gray-600">Invoice Number</p>
+                <p className="text-lg font-semibold">{invoice.invoiceNumber}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Client</p>
+                <p className="text-lg font-semibold">
+                  {invoice.client.name}
+                  {invoice.client.company && ` (${invoice.client.company})`}
+                </p>
+              </div>
             </div>
             <div>
               <p className="text-sm text-gray-600">Total Amount</p>
@@ -200,7 +204,9 @@ const AddPayment = () => {
               placeholder="Enter payment amount"
             />
             {errors.amount && (
-              <p className="text-red-500 text-sm mt-1">{errors.amount.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.amount.message}
+              </p>
             )}
             {amount > 0 && (
               <p className="text-sm text-gray-600 mt-1">

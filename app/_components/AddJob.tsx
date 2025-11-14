@@ -102,7 +102,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
       <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
         <div
           ref={ref}
-          className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 relative max-h-[90vh] overflow-y-auto m-2"
         >
           <button
             onClick={() => setIsModalOpen(false)}
@@ -266,7 +266,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
             </div>
 
             {/* Row 2: Date and Start Time */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="sm:grid grid-cols-3 gap-4">
               <div>
                 <label
                   htmlFor="date"
@@ -340,7 +340,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
             </div>
 
             {/* Row 3: Hours, Rate, and Auto-calculated Amount */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="sm:grid grid-cols-3 gap-4">
               <div>
                 <label
                   htmlFor="totalHours"

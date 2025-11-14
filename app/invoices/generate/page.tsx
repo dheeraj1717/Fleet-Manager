@@ -139,16 +139,16 @@ const GenerateInvoice = () => {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-2 sm:p-4 md:p-8">
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 cursor-pointer"
+        className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 sm:mb-6 cursor-pointer"
       >
         <ArrowLeft size={20} />
         Back
       </button>
 
-      <h1 className="text-3xl font-semibold mb-6">Generate Invoice</h1>
+      <h1 className="text-2xl sm:text-3xl font-semibold mb-6">Generate Invoice</h1>
 
       {/* Debug Info */}
       {/* <div className="mb-4 p-4 bg-gray-100 rounded text-sm">
@@ -161,7 +161,7 @@ const GenerateInvoice = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Form */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-3 sm:p-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Client Selection */}
             <div>

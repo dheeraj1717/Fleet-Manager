@@ -29,7 +29,6 @@ const Jobs = () => {
   const { drivers } = useDriver();
   const { vehicles } = useVehicle();
 
-  // Pagination & Search
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const limit = 10;
@@ -39,20 +38,19 @@ const Jobs = () => {
     setSearchTerm(query.trim());
     setCurrentPage(1);
   };
+
   useEffect(() => {
     fetchJobs(currentPage, limit, searchTerm);
   }, [currentPage, searchTerm]);
-  const handleEdit = (item: any) => {
-    console.log("Edit:", item);
-    // TODO: Implement edit functionality
-  };
+
+  const handleEdit = (item: any) => console.log("Edit:", item);
+
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(page);
   };
 
   const handleDelete = (item: any) => {
-    console.log("Delete:", item);
     setItemToDelete(item);
     setIsDeleteModalOpen(true);
   };
@@ -62,7 +60,7 @@ const Jobs = () => {
     setIsDeleteModalOpen(false);
   };
 
-  const getStatusBadge = (status: string) => {
+   const getStatusBadge = (status: string) => {
     const statusStyles = {
       COMPLETED: "bg-green-100 text-green-800",
       PENDING: "bg-yellow-100 text-yellow-800",
@@ -80,18 +78,19 @@ const Jobs = () => {
   );
 
   return (
-    <div className="p-8">
+    <div className="p-2 sm:p-4 md:p-8">
       {/* Header */}
-      <div className="flex justify-between w-full items-center">
+      <div className="flex flex-col md:flex-row justify-between w-full sm:items-center">
         <div>
-          <h1 className="text-4xl font-semibold">Jobs</h1>
+          <h1 className="text-2xl sm:text-4xl font-semibold">Jobs</h1>
           <p className="text-base text-text-light">
             Manage your fleet jobs and assignments.
           </p>
         </div>
+
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex gap-1 items-center text-text-dark font-semibold py-2 px-4 border border-[#c6c6c6] rounded-md cursor-pointer hover:bg-gray-50 transition delay-100"
+          className="flex gap-1 items-center text-text-dark font-semibold py-2 px-4 border border-[#c6c6c6] rounded-md cursor-pointer hover:bg-gray-50 transition delay-100 mt-4 sm:mt-0 w-fit"
         >
           <Plus size={16} />
           <span className="text-base font-semibold">Add Job</span>
@@ -99,7 +98,7 @@ const Jobs = () => {
       </div>
 
       {/* Search */}
-      <div className="max-w-sm mt-5">
+      <div className="max-w-sm mt-6">
         <SearchBar
           onSearch={handleSearch}
           placeholder="Search by client, driver, challan, or vehicle..."
@@ -107,18 +106,16 @@ const Jobs = () => {
       </div>
 
       {/* Jobs Table */}
-      <div className="w-full mt-10 mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
+      <div className="w-full mt-10 max-w-6xl mx-auto sm:px-4">
+        <div className="bg-white rounded-lg shadow-md overflow-auto border border-gray-200">
           {loading ? (
             <div className="p-8 text-center text-gray-500">Loading jobs...</div>
           ) : error ? (
-            <div className="p-8 text-center text-red-500">
-              Error loading jobs
-            </div>
+            <div className="p-8 text-center text-red-500">Error loading jobs</div>
           ) : jobs.length === 0 ? (
             <div className="p-8 text-center text-gray-500">No jobs found.</div>
           ) : (
-            <table className="w-full">
+            <table className="w-full text-nowrap">
               <thead>
                 <tr className="bg-white border-b-2 border-indigo-200">
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
@@ -153,6 +150,7 @@ const Jobs = () => {
                   </th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-gray-200">
                 {jobs.map((job: any, i: number) => (
                   <tr
@@ -164,9 +162,13 @@ const Jobs = () => {
                     <td className="p-4 font-medium">
                       {(currentPage - 1) * limit + i + 1}
                     </td>
+
                     <td className="p-4 font-medium">{job.challanNo || "-"}</td>
+
                     <td className="p-4">{job.client?.name || "N/A"}</td>
+
                     <td className="p-4">{job.driver?.name || "N/A"}</td>
+
                     <td className="p-4">
                       <div className="flex flex-col">
                         <span className="font-medium">
@@ -177,13 +179,17 @@ const Jobs = () => {
                         </span>
                       </div>
                     </td>
+
                     <td className="p-4">{job.location}</td>
+
                     <td className="p-4">
                       {new Date(job.date).toLocaleDateString()}
                     </td>
+
                     <td className="p-4 font-semibold">
                       ₹{Number(job.amount).toLocaleString()}
                     </td>
+
                     <td className="p-4">
                       <span
                         className={`inline-flex px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(
@@ -193,6 +199,7 @@ const Jobs = () => {
                         {job.status.replace("_", " ")}
                       </span>
                     </td>
+
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button
@@ -202,6 +209,7 @@ const Jobs = () => {
                         >
                           <Pencil size={18} />
                         </button>
+
                         <button
                           disabled={job.invoiceId != null}
                           onClick={() => handleDelete(job)}
@@ -224,18 +232,20 @@ const Jobs = () => {
           <div className="flex justify-center items-center space-x-2 mt-4">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
-              className="w-6 h-6 text-gray-500 hover:text-gray-700"
+              className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"
             >
               <ChevronLeftIcon className="w-5 h-5" />
             </button>
+
             <RenderPageNumbers
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
             />
+
             <button
               onClick={() => handlePageChange(currentPage + 1)}
-              className="w-6 h-6 text-gray-500 hover:text-gray-700"
+              className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"
             >
               <ChevronRightIcon className="w-5 h-5" />
             </button>

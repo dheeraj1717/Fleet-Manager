@@ -41,6 +41,7 @@ export interface Job {
   amount: number;
   status: "COMPLETED" | "PENDING" | "IN_PROGRESS" | "CANCELLED";
   notes?: string;
+  invoiceId?: string;
 }
 
 

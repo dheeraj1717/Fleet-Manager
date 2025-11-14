@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Job } from "./useJobs";
 
-interface Client {
+export interface Client {
   id: string;
   name: string;
   email?: string;

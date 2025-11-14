@@ -32,11 +32,11 @@ const AddVehicles = forwardRef<HTMLDivElement, AddVehiclesProps>(
       },
     });
 
-    const {addVechile} = useVehicle();
+    const {addVehicle} = useVehicle();
 
     const onSubmit = async (data: VehicleFormData) => {
       try {
-        await addVechile(data);
+        await addVehicle(data);
         await fetchVehicles();
         setIsModalOpen(false);
         reset();

@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { VehicleFormData } from "../_components/AddVehicles";
+import { VehicleFormData } from "../components/AddVehicles";
 
 export interface Vehicle {
   id: string;

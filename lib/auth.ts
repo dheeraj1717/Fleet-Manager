@@ -11,7 +11,7 @@ const JWT_SECRET = new TextEncoder().encode(
 export async function generateAccessToken(userId: string) {
   return await new SignJWT({ userId, type: "access" })
     .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("7d")
+    .setExpirationTime("15m")
     .sign(JWT_SECRET);
 }
 
@@ -116,3 +116,9 @@ export function successResponse(data: any, status: number = 200) {
   return Response.json(safeData, { status });
 }
 
+export async function isAuthenticated() {
+  const cookieStore = await cookies();
+  const token =  cookieStore.get("accessToken");
+
+  return Boolean(token);
+}

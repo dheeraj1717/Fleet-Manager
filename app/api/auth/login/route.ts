@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     // append multiple cookies
     response.headers.append(
       "Set-Cookie",
-      `accessToken=${accessToken}; Path=/; HttpOnly; SameSite=Lax; Secure=${process.env.NODE_ENV === 'production'}; Max-Age=${60 * 60 * 24 * 7}` // 15 minutes
+      `accessToken=${accessToken}; Path=/; HttpOnly; SameSite=Lax; Secure=${process.env.NODE_ENV === 'production'}; Max-Age=${60 * 15}` // 15 minutes
     );
     response.headers.append(
       "Set-Cookie",

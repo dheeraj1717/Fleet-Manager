@@ -8,10 +8,10 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react";
-import { useInvoices } from "../hooks/useInvoices";
+import { useInvoices } from "@/hooks/useInvoices";
 import { useEffect, useState } from "react";
-import SearchBar from "../_components/SearchBar";
-import RenderPageNumbers from "../_components/RenderPageNumbers";
+import SearchBar from "@/components/SearchBar";
+import RenderPageNumbers from "@/components/RenderPageNumbers";
 
 const Invoices = () => {
   const router = useRouter();

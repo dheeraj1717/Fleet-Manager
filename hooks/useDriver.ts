@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { DriverFormData } from "../_components/AddDriver";
+import { DriverFormData } from "../components/AddDriver";
 
 export type Driver = {
   id: number;

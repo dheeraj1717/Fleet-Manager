@@ -1,9 +1,9 @@
 "use client";
 import { ChevronDown, LogOut } from "lucide-react";
 import { useState, useRef, RefObject } from "react";
-import useAuth from "../hooks/useAuth";
-import { useUser } from "../hooks/useUser";
-import { useOnclickOutside } from "../hooks/useOnclickOutside";
+import useAuth from "@/hooks/useAuth";
+import { useUser } from "@/hooks/useUser";
+import { useOnclickOutside } from "@/hooks/useOnclickOutside";
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

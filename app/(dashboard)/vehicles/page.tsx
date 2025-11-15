@@ -7,14 +7,14 @@ import {
   ChevronRightIcon,
 } from "lucide-react";
 import { RefObject, useRef, useState, useEffect } from "react";
-import AddVehicles from "../_components/AddVehicles";
-import { useOnclickOutside } from "../hooks/useOnclickOutside";
-import AddVehicleType from "../_components/AddVehicleType";
-import DeleteModal from "../_components/DeleteModal";
-import { useVehicleType } from "../hooks/useVehicletype";
-import { useVehicle } from "../hooks/useVehicle";
-import SearchBar from "../_components/SearchBar";
-import RenderPageNumbers from "../_components/RenderPageNumbers";
+import AddVehicles from "@/components/AddVehicles";
+import { useOnclickOutside } from "@/hooks/useOnclickOutside";
+import AddVehicleType from "@/components/AddVehicleType";
+import DeleteModal from "@/components/DeleteModal";
+import { useVehicleType } from "@/hooks/useVehicletype";
+import { useVehicle } from "@/hooks/useVehicle";
+import SearchBar from "@/components/SearchBar";
+import RenderPageNumbers from "@/components/RenderPageNumbers";
 
 const Vehicles = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

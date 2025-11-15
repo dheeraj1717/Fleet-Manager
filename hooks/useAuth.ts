@@ -24,12 +24,8 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Try to refresh the token
-        await axios.post(
-          `/api/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
+        // Try to refresh the token using apiClient (not axios)
+        await apiClient.post('/api/auth/refresh', {});
 
         // Retry the original request
         return apiClient(originalRequest);
@@ -70,9 +66,8 @@ export default function useAuth() {
     setLoading(true);
     setError(null);
     try {
-      await apiClient.post("/api/auth/logout",{
-        withCredentials: true
-      });
+      // withCredentials is already set in apiClient config, no need to pass it again
+      await apiClient.post("/api/auth/logout");
       // Redirect to login page
       if (typeof window !== 'undefined') {
         window.location.href = '/login';

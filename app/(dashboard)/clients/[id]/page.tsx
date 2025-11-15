@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { useClientJobs } from "@/app/hooks/useClientJobs";
+import { useClientJobs } from "@/hooks/useClientJobs";
 
 const ClientDetails = () => {
   const params = useParams();

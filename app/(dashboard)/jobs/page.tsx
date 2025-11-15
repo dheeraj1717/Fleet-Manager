@@ -7,15 +7,15 @@ import {
   ChevronRightIcon,
 } from "lucide-react";
 import { RefObject, useRef, useState, useEffect } from "react";
-import { useOnclickOutside } from "../hooks/useOnclickOutside";
-import { useJobs } from "../hooks/useJobs";
-import { useClient } from "../hooks/useClient";
-import { useDriver } from "../hooks/useDriver";
-import { useVehicle } from "../hooks/useVehicle";
-import SearchBar from "../_components/SearchBar";
-import RenderPageNumbers from "../_components/RenderPageNumbers";
-import DeleteModal from "../_components/DeleteModal";
-import AddJob from "../_components/AddJob";
+import { useOnclickOutside } from "@/hooks/useOnclickOutside";
+import { useJobs } from "@/hooks/useJobs";
+import { useClient } from "@/hooks/useClient";
+import { useDriver } from "@/hooks/useDriver";
+import { useVehicle } from "@/hooks/useVehicle";
+import SearchBar from "@/components/SearchBar";
+import RenderPageNumbers from "@/components/RenderPageNumbers";
+import DeleteModal from "@/components/DeleteModal";
+import AddJob from "@/components/AddJob";
 
 const Jobs = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

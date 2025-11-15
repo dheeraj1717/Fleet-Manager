@@ -1,67 +1,15 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Printer, Download, DollarSign } from "lucide-react";
-import axios from "axios";
-import PrintInvoice from "@/app/_components/PrintInvoice";
-
-interface Invoice {
-  id: string;
-  invoiceNumber: string;
-  client: {
-    id: string;
-    name: string;
-    email?: string;
-    contactNo: string;
-    company?: string;
-    address: string;
-  };
-  startDate: string;
-  endDate: string;
-  subtotal: number;
-  tax: number;
-  totalAmount: number;
-  paidAmount: number;
-  balanceAmount: number;
-  status: string;
-  notes?: string;
-  createdAt: string;
-  jobs: any[];
-  payments?: Array<{
-    id: string;
-    amount: number;
-    paymentMethod: string;
-    referenceNo?: string;
-    paymentDate: string;
-    notes?: string;
-  }>;
-}
+import PrintInvoice from "@/components/PrintInvoice";
+import useInvoiceDetails from "@/hooks/useInvoiceDetails";
 
 const InvoiceDetails = () => {
   const params = useParams();
   const router = useRouter();
-  const [invoice, setInvoice] = useState<Invoice | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { invoice, loading, error } = useInvoiceDetails(params.id as string);
   const [showPrintModal, setShowPrintModal] = useState(false);
-
-  useEffect(() => {
-    fetchInvoice();
-  }, [params.id]);
-
-  const fetchInvoice = async () => {
-    try {
-      setLoading(true);
-      const response = await axios.get(`/api/invoices/${params.id}`, {
-        withCredentials: true,
-      });
-      setInvoice(response.data.data || response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Failed to load invoice");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const userCompany = {
     name: "M/S HIGH TECH INFRASTRUCTURES",
@@ -283,73 +231,75 @@ const InvoiceDetails = () => {
           </table>
         </div>
       </div>
-      {invoice.payments && invoice.payments.length > 0 && (
-  <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6 mt-6">
-    <h3 className="text-xl font-semibold mb-4">Payment History</h3>
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="bg-gray-50 border-b-2 border-indigo-200 text-nowrap">
-            <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
-              Date
-            </th>
-            <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
-              Amount
-            </th>
-            <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
-              Method
-            </th>
-            <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
-              Reference
-            </th>
-            <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
-              Notes
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200">
-          {invoice.payments.map((payment: any, index: number) => (
-            <tr
-              key={payment.id}
-              className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-            >
-              <td className="p-4 text-gray-700">
-                {new Date(payment.paymentDate).toLocaleDateString()}
-              </td>
-              <td className="p-4 text-green-600 font-semibold">
-                ₹{payment.amount.toLocaleString()}
-              </td>
-              <td className="p-4 text-gray-700">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                  {payment.paymentMethod.replace("_", " ")}
-                </span>
-              </td>
-              <td className="p-4 text-gray-700">
-                {payment.referenceNo || "-"}
-              </td>
-              <td className="p-4 text-gray-600 text-sm">
-                {payment.notes || "-"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-)}
 
-{/* Add Payment Button (if balance > 0) */}
-{invoice.balanceAmount > 0 && (
-  <div className="mt-6 flex justify-end">
-    <button
-      onClick={() => router.push(`/invoices/${invoice.id}/payment`)}
-      className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium"
-    >
-      <DollarSign size={20} />
-      Record Payment
-    </button>
-  </div>
-)}
+      {/* Payment History */}
+      {invoice.payments && invoice.payments.length > 0 && (
+        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6 mt-6">
+          <h3 className="text-xl font-semibold mb-4">Payment History</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 border-b-2 border-indigo-200 text-nowrap">
+                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
+                    Date
+                  </th>
+                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
+                    Amount
+                  </th>
+                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
+                    Method
+                  </th>
+                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
+                    Reference
+                  </th>
+                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase">
+                    Notes
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {invoice.payments.map((payment, index) => (
+                  <tr
+                    key={payment.id}
+                    className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                  >
+                    <td className="p-4 text-gray-700">
+                      {new Date(payment.paymentDate).toLocaleDateString()}
+                    </td>
+                    <td className="p-4 text-green-600 font-semibold">
+                      ₹{payment.amount.toLocaleString()}
+                    </td>
+                    <td className="p-4 text-gray-700">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {payment.paymentMethod.replace("_", " ")}
+                      </span>
+                    </td>
+                    <td className="p-4 text-gray-700">
+                      {payment.referenceNo || "-"}
+                    </td>
+                    <td className="p-4 text-gray-600 text-sm">
+                      {payment.notes || "-"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Add Payment Button (if balance > 0) */}
+      {invoice.balanceAmount > 0 && (
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={() => router.push(`/invoices/${invoice.id}/payment`)}
+            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium"
+          >
+            <DollarSign size={20} />
+            Record Payment
+          </button>
+        </div>
+      )}
 
       {/* Print Modal */}
       {showPrintModal && (

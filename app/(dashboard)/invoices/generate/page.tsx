@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
-import { useClient } from "@/app/hooks/useClient";
+import { useClient } from "@/hooks/useClient";
 
 interface Client {
   id: string;

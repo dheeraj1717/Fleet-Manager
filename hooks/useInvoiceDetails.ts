@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import useAuth from "./useAuth";
+import useAuth, { apiClient } from "./useAuth";
 
 interface Invoice {
   id: string;
@@ -35,7 +35,6 @@ interface Invoice {
 }
 
 export default function useInvoiceDetails(invoiceId: string) {
-  const { apiClient } = useAuth();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

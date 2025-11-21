@@ -3,6 +3,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { VehicleFormData } from "../components/AddVehicles";
+import { apiClient } from "./useAuth";
 
 export interface Vehicle {
   id: string;
@@ -28,7 +29,7 @@ export const useVehicle = () => {
     setError(null);
     try {
       const offset = (page - 1) * limit;
-      const res = await axios.get(`/api/vehicle`, {
+      const res = await apiClient.get(`/api/vehicle`, {
         params: { offset, limit, search: search.trim() },
         withCredentials: true,
       });
@@ -44,13 +45,9 @@ export const useVehicle = () => {
     }
   };
 
-  useEffect(() => {
-    fetchVehicles();
-  }, []);
-
   const addVehicle = async (data: VehicleFormData) => {
     try {
-      await axios.post(`/api/vehicle`, data, { withCredentials: true });
+      await apiClient.post(`/api/vehicle`, data, { withCredentials: true });
       await fetchVehicles();
     } catch (error: any) {
       console.error("Error adding vehicle:", error);

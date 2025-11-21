@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { apiClient } from "./useAuth";
 
 export interface AnalyticsData {
   overview: {
@@ -56,7 +57,7 @@ export function useAnalytics(period: number = 30) {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/api/analytics?period=${days}`, {
+      const response = await apiClient.get(`/api/analytics?period=${days}`, {
         withCredentials: true,
       });
       setData(response.data.data || response.data);

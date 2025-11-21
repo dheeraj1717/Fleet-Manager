@@ -1,6 +1,7 @@
 "use client";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import {apiClient} from "./useAuth";
 
 export interface CreateJobData {
   clientId: string;
@@ -56,7 +57,7 @@ export const useJobs = () => {
     setError(null);
     try {
       const offset = (page - 1) * limit;
-      const res = await axios.get("/api/jobs", {
+      const res = await apiClient.get("/api/jobs", {
         params: { limit, offset, search },
         withCredentials: true,
       });
@@ -70,16 +71,13 @@ export const useJobs = () => {
       setLoading(false);
     }
   };
-useEffect(() => {
-  fetchJobs();
-},[])
   const addJob = async (jobData: any) => {
-    await axios.post("/api/jobs", jobData, { withCredentials: true });
+    await apiClient.post("/api/jobs", jobData, { withCredentials: true });
     await fetchJobs();
   };
 
   const deleteJob = async (id: string) => {
-    await axios.delete(`/api/jobs?id=${id}`, { withCredentials: true });
+    await apiClient.delete(`/api/jobs?id=${id}`, { withCredentials: true });
     await fetchJobs();
   };
 

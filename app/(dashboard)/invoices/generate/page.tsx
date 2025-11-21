@@ -5,6 +5,7 @@ import { ArrowLeft, Calendar } from "lucide-react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useClient } from "@/hooks/useClient";
+import { apiClient } from "@/hooks/useAuth";
 
 interface Client {
   id: string;
@@ -69,7 +70,7 @@ const GenerateInvoice = () => {
         const url = `/api/jobs?clientId=${clientId}&invoiceId=null&startDate=${startDate}&endDate=${endDate}&status=COMPLETED`;
         console.log("API URL:", url);
 
-        const response = await axios.get(url, {
+        const response = await apiClient.get(url, {
           withCredentials: true,
         });
 
@@ -90,7 +91,7 @@ const GenerateInvoice = () => {
   const onSubmit = async (data: GenerateInvoiceForm) => {
     console.log("Submitting form with data:", data);
     try {
-      const response = await axios.post("/api/invoices/generate", data, {
+      const response = await apiClient.post("/api/invoices/generate", data, {
         withCredentials: true,
       });
       console.log("Invoice generated:", response.data);

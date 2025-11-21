@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
+import { apiClient } from "@/hooks/useAuth";
 
 interface PaymentForm {
   amount: number;
@@ -56,7 +57,7 @@ const AddPayment = () => {
   const fetchInvoice = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/invoices/${params.id}`, {
+      const response = await apiClient.get(`/api/invoices/${params.id}`, {
         withCredentials: true,
       });
       const invoiceData = response.data.data || response.data;
@@ -98,7 +99,7 @@ const AddPayment = () => {
 
       console.log("Submitting payment:", payload);
 
-      await axios.post("/api/payments", payload, {
+      await apiClient.post("/api/payments", payload, {
         withCredentials: true,
       });
 

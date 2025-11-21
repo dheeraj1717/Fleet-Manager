@@ -2,6 +2,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { getUserFromToken } from "@/lib/getUserFromToken";
+import { apiClient } from "./useAuth";
 
 interface User {
   id: string;
@@ -18,7 +19,7 @@ export const useUser = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("/api/user/me", {
+        const res = await apiClient.get("/api/user/me", {
           withCredentials: true,
         });
         console.log(res.data);

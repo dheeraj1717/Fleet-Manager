@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Job } from "./useJobs";
+import { apiClient } from "./useAuth";
 
 export interface Client {
   id: string;
@@ -33,7 +34,7 @@ export function useClientJobs(clientId: string | string[] | undefined) {
       setLoading(true);
       setError(null);
 
-      const clientResponse = await axios.get(`/api/client/${clientId}`, {
+      const clientResponse = await apiClient.get(`/api/client/${clientId}`, {
         withCredentials: true,
       });
       

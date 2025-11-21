@@ -8,10 +8,28 @@ export interface LoginData {
 }
 
 // Create axios instance with interceptor for auto-refresh
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: "",
   withCredentials: true,
 });
+
+// Track if we're currently refreshing to prevent multiple simultaneous refresh attempts
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
+
+const processQueue = (error: any = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve();
+    }
+  });
+  failedQueue = [];
+};
 
 // Response interceptor to handle 401 and refresh token
 apiClient.interceptors.response.use(
@@ -19,22 +37,45 @@ apiClient.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
-    // If error is 401 and we haven't tried to refresh yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Don't retry refresh endpoint itself or if already retried
+    if (
+      originalRequest.url?.includes('/api/auth/refresh') ||
+      originalRequest._retry
+    ) {
+      return Promise.reject(error);
+    }
+
+    // If error is 401, try to refresh
+    if (error.response?.status === 401) {
+      if (isRefreshing) {
+        // If already refreshing, queue this request
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => {
+            return apiClient(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
-        // Try to refresh the token using apiClient (not axios)
-        await apiClient.post('/api/auth/refresh', {});
-
-        // Retry the original request
+        await apiClient.post('/api/auth/refresh');
+        processQueue();
         return apiClient(originalRequest);
       } catch (refreshError) {
+        processQueue(refreshError);
         // Refresh failed, redirect to login
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
           window.location.href = '/login';
         }
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
@@ -66,9 +107,7 @@ export default function useAuth() {
     setLoading(true);
     setError(null);
     try {
-      // withCredentials is already set in apiClient config, no need to pass it again
       await apiClient.post("/api/auth/logout");
-      // Redirect to login page
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }
@@ -80,5 +119,5 @@ export default function useAuth() {
     }
   };
 
-  return { login, logout, loading, error, apiClient };
+  return { login, logout, loading, error };
 }

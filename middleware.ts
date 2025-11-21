@@ -13,23 +13,24 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const accessToken = req.cookies.get("accessToken")?.value;
+  // Check for REFRESH token instead of access token
+  // This allows the client-side interceptor to refresh the access token
+  const refreshToken = req.cookies.get("refreshToken")?.value;
 
-  // If the route is NOT public and the user has no token → redirect to /login
-  if (!isPublic && !accessToken) {
+  // If the route is NOT public and the user has no refresh token → redirect to /login
+  if (!isPublic && !refreshToken) {
     const loginUrl = new URL("/login", req.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // If logged-in user tries to access /login → redirect to /
-  if (pathname === "/login" && accessToken) {
+  if (pathname === "/login" && refreshToken) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
   return NextResponse.next();
 }
 
-// Apply middleware to all pages except next assets and API routes
 export const config = {
   matcher: ["/((?!_next|static|favicon.ico|api).*)"],
 };

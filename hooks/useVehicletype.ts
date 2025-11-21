@@ -3,6 +3,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { VehicleTypeFormData } from "../components/AddVehicleType";
+import { apiClient } from "./useAuth";
 
 interface VehicleType {
   id: string;
@@ -19,7 +20,7 @@ export const useVehicleType = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(
+      const res = await apiClient.get(
         `/api/vehicle-types`,
         {
           withCredentials: true,
@@ -37,13 +38,9 @@ export const useVehicleType = () => {
     }
   };
 
-  useEffect(() => {
-    fetchVehicleTypes();
-  }, []);
-
   const addVehicleType = async (vehicleType: VehicleTypeFormData) => {
     try {
-     await axios.post(`/api/vehicle-types`, vehicleType, {
+     await apiClient.post(`/api/vehicle-types`, vehicleType, {
         withCredentials: true,
       });
       await fetchVehicleTypes();

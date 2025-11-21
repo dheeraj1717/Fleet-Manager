@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { apiClient } from "./useAuth";
 
 export interface Invoice {
   id: string;
@@ -36,7 +37,7 @@ export const useInvoices = () => {
     setError(null);
     try {
       const offset = (page - 1) * limit;
-      const response = await axios.get(`/api/invoices`, {
+      const response = await apiClient.get(`/api/invoices`, {
         params: {
           limit,
           offset,
@@ -53,10 +54,6 @@ export const useInvoices = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchInvoices();
-  }, [filter]);
 
   return { invoices, loading, filter, setFilter, total, fetchInvoices };
 };

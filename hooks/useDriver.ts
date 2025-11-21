@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { DriverFormData } from "../components/AddDriver";
+import { apiClient } from "./useAuth";
 
 export type Driver = {
   id: number;
@@ -22,7 +23,7 @@ export const useDriver = () => {
     setError(null);
     try {
       const offset = (page - 1) * limit;
-      const res = await axios.get("/api/drivers", {
+      const res = await apiClient.get("/api/drivers", {
         params: {
           limit,
           offset,
@@ -41,13 +42,9 @@ export const useDriver = () => {
     }
   };
 
-  useEffect(() => {
-    fetchDrivers();
-  }, []);
-
   const addDriver = async (data: DriverFormData) => {
     try {
-      await axios.post("/api/drivers", data, {
+      await apiClient.post("/api/drivers", data, {
         withCredentials: true,
       });
       await fetchDrivers();
@@ -58,7 +55,7 @@ export const useDriver = () => {
 
   const deleteDriver = async (id: number) => {
     try {
-      await axios.delete(`/api/drivers?id=${id}`, {
+      await apiClient.get(`/api/drivers?id=${id}`, {
         withCredentials: true,
       });
       await fetchDrivers();

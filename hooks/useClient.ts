@@ -1,6 +1,7 @@
 "use client";
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { apiClient } from "./useAuth";
 
 export type Client = {
   id: number;
@@ -22,7 +23,7 @@ export const useClient = () => {
     setError(null);
     try {
       const offset = (page - 1) * limit;
-      const res = await axios.get("/api/client", {
+      const res = await apiClient.get("/api/client", {
         params: {
           limit,
           offset,
@@ -42,13 +43,9 @@ export const useClient = () => {
     }
   };
 
-  useEffect(() => {
-    fetchClients();
-  }, []);
-
   const addClient = async (data: Omit<Client, "id">) => {
     try {
-      await axios.post("/api/client", data, {
+      await apiClient.post("/api/client", data, {
         withCredentials: true,
       });
       await fetchClients();
@@ -60,7 +57,7 @@ export const useClient = () => {
 
   const deleteClient = async (id: number) => {
     try {
-      await axios.delete(`/api/client?id=${id}`, {
+      await apiClient.get(`/api/client?id=${id}`, {
         withCredentials: true,
       });
       await fetchClients();

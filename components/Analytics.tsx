@@ -93,7 +93,7 @@ export default function Analytics() {
         <select
           value={period}
           onChange={(e) => setPeriod(parseInt(e.target.value))}
-          className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[250px] mt-4 sm:mt-0"
+          className="px-4 py-2 border border-gray-300 max-w-[250px] mt-4 sm:mt-0 cursor-pointer"
         >
           <option value={7}>Last 7 days</option>
           <option value={30}>Last 30 days</option>

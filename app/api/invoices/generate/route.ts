@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = await getUserFromRequest(request);
     console.log('Generate invoice - User ID:', userId);
-    
+     
     if (!userId) {
       return errorResponse('Unauthorized', 401);
     }

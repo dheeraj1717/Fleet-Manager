@@ -38,7 +38,8 @@ const Clients = () => {
   const handleRowClick = (clientId: string) => {
     router.push(`/clients/${clientId}`);
   };
-  const handleEdit = (item: any) => {
+  const handleEdit = (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
     console.log("Edit:", item);
     // TODO: Implement edit functionality
   };
@@ -59,7 +60,6 @@ const Clients = () => {
     }
     setIsDeleteModalOpen(false);
   };
-
   return (
     <div className="p-2 sm:p-4 md:p-8">
       <div className="flex flex-col md:flex-row justify-between w-full sm:items-center">
@@ -147,7 +147,7 @@ const Clients = () => {
                     <td className="p-4">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={() => handleEdit(client)}
+                          onClick={(e) => handleEdit(e,client)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
                           title="Edit"
                         >

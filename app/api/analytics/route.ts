@@ -14,11 +14,15 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get("period") || "30"; // days
+    const period = searchParams.get("period") || "30";
     const days = parseInt(period);
 
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
+
+    // Calculate months to show based on period
+    const monthsToShow = Math.ceil(days / 30);
+    const monthsInterval = `${monthsToShow} months`;
 
     // Parallel queries for better performance
     const [
@@ -47,19 +51,19 @@ export async function GET(request: NextRequest) {
       recentInvoices,
       recentPayments,
       
-      // Monthly Revenue (last 6 months)
+      // Monthly Revenue (based on selected period)
       monthlyRevenue,
       
-      // Top Clients
+      // Top Clients (filtered by period)
       topClients,
       
-      // Vehicle Utilization
+      // Vehicle Utilization (filtered by period)
       vehicleUsage,
       
       // Expiring Insurance
       expiringInsurance,
     ] = await Promise.all([
-      // Overview Stats
+      // Overview Stats (all-time)
       prisma.client.count({ where: { userId } }),
       prisma.client.count({ where: { userId, isActive: true } }),
       prisma.driver.count({ where: { userId } }),
@@ -78,7 +82,7 @@ export async function GET(request: NextRequest) {
         },
       }),
       
-      // Financial Stats - Total Revenue
+      // Financial Stats - Total Revenue (all-time)
       prisma.job.aggregate({
         where: { userId, status: "COMPLETED" },
         _sum: { amount: true },
@@ -146,7 +150,7 @@ export async function GET(request: NextRequest) {
         take: 5,
       }),
       
-      // Monthly Revenue (last 6 months)
+      // Monthly Revenue (filtered by period)
       prisma.$queryRaw`
         SELECT 
           TO_CHAR(date, 'Mon YYYY') as month,
@@ -155,12 +159,12 @@ export async function GET(request: NextRequest) {
         FROM "Job"
         WHERE "userId" = ${userId}
           AND status = 'COMPLETED'
-          AND date >= NOW() - INTERVAL '6 months'
+          AND date >= ${startDate}
         GROUP BY TO_CHAR(date, 'Mon YYYY'), DATE_TRUNC('month', date)
         ORDER BY DATE_TRUNC('month', date) ASC
       `,
       
-      // Top Clients by Revenue
+      // Top Clients by Revenue (filtered by period)
       prisma.$queryRaw`
         SELECT 
           c.id,
@@ -169,14 +173,17 @@ export async function GET(request: NextRequest) {
           CAST(SUM(j.amount) as FLOAT) as total_revenue,
           COUNT(j.id) as job_count
         FROM "Client" c
-        LEFT JOIN "Job" j ON j."clientId" = c.id AND j.status = 'COMPLETED'
+        LEFT JOIN "Job" j ON j."clientId" = c.id 
+          AND j.status = 'COMPLETED'
+          AND j.date >= ${startDate}
         WHERE c."userId" = ${userId}
         GROUP BY c.id, c.name, c.company
+        HAVING COUNT(j.id) > 0
         ORDER BY total_revenue DESC
         LIMIT 5
       `,
       
-      // Vehicle Utilization
+      // Vehicle Utilization (filtered by period)
       prisma.$queryRaw`
         SELECT 
           v.id,
@@ -186,9 +193,12 @@ export async function GET(request: NextRequest) {
           CAST(SUM(j.amount) as FLOAT) as total_revenue
         FROM "Vehicle" v
         LEFT JOIN "VehicleType" vt ON v."vehicleTypeId" = vt.id
-        LEFT JOIN "Job" j ON j."vehicleId" = v.id AND j.status = 'COMPLETED'
+        LEFT JOIN "Job" j ON j."vehicleId" = v.id 
+          AND j.status = 'COMPLETED'
+          AND j.date >= ${startDate}
         WHERE v."ownerId" = ${userId}
         GROUP BY v.id, v."registrationNo", vt.name
+        HAVING COUNT(j.id) > 0
         ORDER BY job_count DESC
         LIMIT 5
       `,

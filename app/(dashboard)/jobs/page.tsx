@@ -16,18 +16,33 @@ import SearchBar from "@/components/SearchBar";
 import RenderPageNumbers from "@/components/RenderPageNumbers";
 import DeleteModal from "@/components/DeleteModal";
 import AddJob from "@/components/AddJob";
+import useNotification from "@/hooks/useNotification";
 
 const Jobs = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
-  const addJobRef = useRef<HTMLElement>(null);
+  const { triggerNotification, NotificationComponent } = useNotification();
 
-  const { jobs, total, loading, error, addJob, deleteJob, fetchJobs } =
-    useJobs();
-  const { clients } = useClient();
-  const { drivers } = useDriver();
-  const { vehicles } = useVehicle();
+  const {
+    jobs,
+    total,
+    loading,
+    error,
+    addJobError,
+    addJob,
+    deleteJob,
+    fetchJobs,
+  } = useJobs();
+  const { clients, fetchClients } = useClient();
+  const { drivers, fetchDrivers } = useDriver();
+  const { vehicles, fetchVehicles } = useVehicle();
+
+  useEffect(() => {
+    fetchClients(1, 20);
+    fetchDrivers(1, 20);
+    fetchVehicles(1, 20);
+  }, []);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -56,11 +71,16 @@ const Jobs = () => {
   };
 
   const handleDeleteJob = async (item: any) => {
-    if (item?.id) await deleteJob(item.id);
-    setIsDeleteModalOpen(false);
+    try {
+      if (item?.id) await deleteJob(item.id);
+      setIsDeleteModalOpen(false);
+      triggerNotification({ message: "Job deleted successfully", type: "success" });
+    } catch (error) {
+      triggerNotification({ message: "Something went wrong", type: "error" });
+    }
   };
 
-   const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string) => {
     const statusStyles = {
       COMPLETED: "bg-green-100 text-green-800",
       PENDING: "bg-yellow-100 text-yellow-800",
@@ -72,10 +92,6 @@ const Jobs = () => {
       "bg-gray-100 text-gray-800"
     );
   };
-
-  useOnclickOutside(addJobRef as RefObject<HTMLElement>, () =>
-    setIsModalOpen(false)
-  );
 
   return (
     <div className="p-2 sm:p-4 md:p-8">
@@ -111,7 +127,9 @@ const Jobs = () => {
           {loading ? (
             <div className="p-8 text-center text-gray-500">Loading jobs...</div>
           ) : error ? (
-            <div className="p-8 text-center text-red-500">Error loading jobs</div>
+            <div className="p-8 text-center text-red-500">
+              Error loading jobs
+            </div>
           ) : jobs.length === 0 ? (
             <div className="p-8 text-center text-gray-500">No jobs found.</div>
           ) : (
@@ -211,7 +229,7 @@ const Jobs = () => {
                         </button>
 
                         <button
-                          disabled={job.invoiceId != null}
+                          disabled={job.invoiceId !== null}
                           onClick={() => handleDelete(job)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer disabled:cursor-default disabled:hover:bg-red-50/10"
                           title="Delete"
@@ -255,8 +273,8 @@ const Jobs = () => {
         {/* Add Job Modal */}
         {isModalOpen && (
           <AddJob
-            ref={addJobRef as RefObject<HTMLDivElement>}
             setIsModalOpen={setIsModalOpen}
+            addJobError={addJobError}
             addJob={addJob}
             fetchJobs={fetchJobs}
             clients={clients || []}
@@ -276,6 +294,7 @@ const Jobs = () => {
           />
         )}
       </div>
+      {NotificationComponent}
     </div>
   );
 };

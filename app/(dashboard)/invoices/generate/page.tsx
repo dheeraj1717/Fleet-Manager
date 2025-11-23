@@ -24,8 +24,10 @@ const GenerateInvoice = () => {
   const router = useRouter();
   const [unbilledJobs, setUnbilledJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const { clients } = useClient();
-
+  const { fetchClients, clients } = useClient();
+useEffect(() => {
+ fetchClients();
+},[])
   const {
     register,
     handleSubmit,

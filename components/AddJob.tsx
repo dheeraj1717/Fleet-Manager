@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
 import { forwardRef, useEffect } from "react";
 import { CreateJobData } from "../hooks/useJobs";
+import useNotification from "@/hooks/useNotification";
 
 type AddJobProps = {
   setIsModalOpen: (isOpen: boolean) => void;
@@ -16,6 +17,7 @@ type AddJobProps = {
     vehicleType?: string;
     vehicleTypeId?: string;
   }>;
+  addJobError: Error | null;
 };
 
 const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
@@ -27,6 +29,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
       clients,
       drivers,
       vehicles,
+      addJobError,
     },
     ref
   ) => {
@@ -60,6 +63,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
     const totalHours = watch("totalHours");
     const ratePerHour = watch("ratePerHour");
     const selectedVehicleId = watch("vehicleId");
+    const {triggerNotification, NotificationComponent} = useNotification();
 
     // Auto-calculate amount when hours or rate changes
     useEffect(() => {
@@ -79,24 +83,32 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
       }
     }, [selectedVehicleId, vehicles, setValue]);
 
-    const onSubmit = async (data: CreateJobData) => {
-      try {
-        // Ensure numbers are properly formatted
-        const jobData: CreateJobData = {
-          ...data,
-          totalHours: Number(data.totalHours),
-          ratePerHour: Number(data.ratePerHour),
-          amount: Number(data.amount),
-        };
-        
-        await addJob(jobData);
-        await fetchJobs();
-        setIsModalOpen(false);
-        reset();
-      } catch (error) {
-        console.error("Error adding job:", error);
-      }
+   const onSubmit = async (data: CreateJobData) => {
+  try {
+    const jobData: CreateJobData = {
+      ...data,
+      totalHours: Number(data.totalHours),
+      ratePerHour: Number(data.ratePerHour),
+      amount: Number(data.amount),
     };
+
+    await addJob(jobData);
+    console.log("-----------")
+    await fetchJobs();
+    setIsModalOpen(false);
+    reset();
+  } catch (error: any) {
+  console.error("Error adding job:", error);
+
+  const msg =
+    error?.response?.data?.error ||      
+    error?.message ||                   
+    "Something went wrong";
+
+  triggerNotification({ message: msg, type: "error" });
+}
+
+  }
 
     return (
       <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
@@ -471,6 +483,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
             </div>
           </form>
         </div>
+        {NotificationComponent}
       </div>
     );
   }

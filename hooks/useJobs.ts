@@ -51,6 +51,7 @@ export const useJobs = () => {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [addJobError, setAddJobError] = useState<Error | null>(null);
 
   const fetchJobs = async (page = 1, limit = 10, search = "") => {
     setLoading(true);
@@ -72,14 +73,24 @@ export const useJobs = () => {
     }
   };
   const addJob = async (jobData: any) => {
-    await apiClient.post("/api/jobs", jobData, { withCredentials: true });
+    try {
+      await apiClient.post("/api/jobs", jobData, { withCredentials: true });
     await fetchJobs();
+    } catch (error) {
+      console.log(error);
+      setAddJobError(error as Error);
+      throw error; 
+    }
   };
 
   const deleteJob = async (id: string) => {
-    await apiClient.delete(`/api/jobs?id=${id}`, { withCredentials: true });
+    try {
+      await apiClient.delete(`/api/jobs?id=${id}`, { withCredentials: true });
     await fetchJobs();
+    } catch (error:any) {
+      throw error;
+    }
   };
 
-  return { jobs, total, loading, error, fetchJobs, addJob, deleteJob };
+  return { jobs, total, loading, error, addJobError, fetchJobs, addJob, deleteJob };
 };

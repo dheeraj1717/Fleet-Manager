@@ -179,7 +179,7 @@ const Vehicles = () => {
                           </button>
                           <button
                             onClick={() => handleDelete(vehicle)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
                             title="Delete"
                           >
                             <Trash2 size={18} />

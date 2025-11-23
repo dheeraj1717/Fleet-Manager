@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { apiClient } from "./useAuth";
 
 export interface AnalyticsData {
@@ -53,25 +52,25 @@ export function useAnalytics(period: number = 30) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchAnalytics = async (days: number = period) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await apiClient.get(`/api/analytics?period=${days}`, {
-        withCredentials: true,
-      });
-      setData(response.data.data || response.data);
-    } catch (err: any) {
-      setError(err);
-      console.error("Error fetching analytics:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchAnalytics = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await apiClient.get(`/api/analytics?period=${period}`, {
+          withCredentials: true,
+        });
+        setData(response.data.data || response.data);
+      } catch (err: any) {
+        setError(err);
+        console.error("Error fetching analytics:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchAnalytics();
   }, [period]);
 
-  return { data, loading, error, refetch: fetchAnalytics };
+  return { data, loading, error };
 }

@@ -32,7 +32,6 @@ export const useClient = () => {
         withCredentials: true,
       });
       const data = res.data;
-      console.log(data);
       setClients(data.clients);
       setTotal(data.total);
     } catch (error: any) {

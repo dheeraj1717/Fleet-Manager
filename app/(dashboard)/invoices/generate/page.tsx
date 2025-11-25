@@ -90,19 +90,24 @@ useEffect(() => {
       }
     };
 
-  const onSubmit = async (data: GenerateInvoiceForm) => {
-    console.log("Submitting form with data:", data);
-    try {
-      const response = await apiClient.post("/api/invoices/generate", data, {
-        withCredentials: true,
-      });
-      console.log("Invoice generated:", response.data);
-      router.push(`/invoices/${response.data.data.id}`);
-    } catch (error: any) {
-      console.error("Error generating invoice:", error);
-      alert(error.response?.data?.error || "Failed to generate invoice");
-    }
-  };
+const onSubmit = async (data: GenerateInvoiceForm) => {
+  try {
+    const response = await apiClient.post("/api/invoices/generate", data, {
+      withCredentials: true,
+    });
+
+    console.log("Invoice generated:", response.data);
+
+    const invoice = response.data;
+
+    router.push(`(dashboard)/invoices/${invoice.id}`);
+  } catch (error: any) {
+    console.error("Error generating invoice:", error);
+    alert(error.response?.data?.error || "Failed to generate invoice");
+  }
+};
+
+
 
   const totalAmount = unbilledJobs.reduce(
     (sum, job) => sum + (job.amount || 0),

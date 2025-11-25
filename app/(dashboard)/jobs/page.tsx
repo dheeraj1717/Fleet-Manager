@@ -6,7 +6,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react";
-import { RefObject, useRef, useState, useEffect } from "react";
+import { RefObject, useRef, useState, useEffect, useCallback } from "react";
 import { useOnclickOutside } from "@/hooks/useOnclickOutside";
 import { useJobs } from "@/hooks/useJobs";
 import { useClient } from "@/hooks/useClient";
@@ -23,7 +23,9 @@ const Jobs = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
   const { triggerNotification, NotificationComponent } = useNotification();
-
+ const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const limit = 10;
   const {
     jobs,
     total,
@@ -37,6 +39,7 @@ const Jobs = () => {
   const { clients, fetchClients } = useClient();
   const { drivers, fetchDrivers } = useDriver();
   const { vehicles, fetchVehicles } = useVehicle();
+  const totalPages = Math.ceil(total / limit);
 
   useEffect(() => {
     fetchClients(1, 20);
@@ -44,19 +47,17 @@ const Jobs = () => {
     fetchVehicles(1, 20);
   }, []);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const limit = 10;
-  const totalPages = Math.ceil(total / limit);
+ 
 
-  const handleSearch = (query: string) => {
-    setSearchTerm(query.trim());
-    setCurrentPage(1);
-  };
+const handleSearch = useCallback((query: string) => {
+  setSearchTerm(query.trim());
+  setCurrentPage(1);
+}, []);
 
   useEffect(() => {
-    fetchJobs(currentPage, limit, searchTerm);
-  }, [currentPage, searchTerm]);
+  fetchJobs(currentPage, limit, searchTerm);
+}, [currentPage, searchTerm]);
+
 
   const handleEdit = (item: any) => console.log("Edit:", item);
 

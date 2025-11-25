@@ -43,7 +43,7 @@ const RenderPageNumbers = ({
       <button
         key={index}
         onClick={() => onPageChange(page as number)}
-        className={`px-3 py-2 rounded-md ${
+        className={`px-3 py-2 rounded-md cursor-pointer ${
           page === currentPage
             ? "bg-primary text-white"
             : "bg-white text-gray-600 hover:bg-gray-100"

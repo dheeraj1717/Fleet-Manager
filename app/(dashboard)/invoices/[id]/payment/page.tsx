@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { apiClient } from "@/hooks/useAuth";
+import useNotification from "@/hooks/useNotification";
 
 interface PaymentForm {
   amount: number;
@@ -33,6 +34,7 @@ const AddPayment = () => {
   const router = useRouter();
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
+  const {triggerNotification, NotificationComponent} = useNotification();
 
   const {
     register,
@@ -107,7 +109,7 @@ const AddPayment = () => {
       router.push(`/invoices/${invoice.id}`);
     } catch (error: any) {
       console.error("Payment error:", error);
-      alert(error.response?.data?.error || "Failed to record payment");
+      triggerNotification({ message: error.message || "Something went wrong", type: "error" });
     }
   };
 
@@ -341,6 +343,7 @@ const AddPayment = () => {
           </div>
         </form>
       </div>
+      {NotificationComponent}
     </div>
   );
 };

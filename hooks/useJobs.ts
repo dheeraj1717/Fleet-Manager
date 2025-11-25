@@ -1,7 +1,6 @@
 "use client";
-import axios from "axios";
-import { useEffect, useState } from "react";
-import {apiClient} from "./useAuth";
+import { useState, useCallback } from "react";
+import { apiClient } from "./useAuth";
 
 export interface CreateJobData {
   clientId: string;
@@ -45,7 +44,6 @@ export interface Job {
   invoiceId?: string;
 }
 
-
 export const useJobs = () => {
   const [jobs, setJobs] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -53,7 +51,7 @@ export const useJobs = () => {
   const [error, setError] = useState<Error | null>(null);
   const [addJobError, setAddJobError] = useState<Error | null>(null);
 
-  const fetchJobs = async (page = 1, limit = 10, search = "") => {
+   const fetchJobs = async (page = 1, limit = 10, search = "") => {
     setLoading(true);
     setError(null);
     try {
@@ -72,25 +70,25 @@ export const useJobs = () => {
       setLoading(false);
     }
   };
-  const addJob = async (jobData: any) => {
+
+  const addJob = useCallback(async (jobData: any) => {
+    setAddJobError(null);
     try {
       await apiClient.post("/api/jobs", jobData, { withCredentials: true });
-    await fetchJobs();
     } catch (error) {
       console.log(error);
       setAddJobError(error as Error);
-      throw error; 
-    }
-  };
-
-  const deleteJob = async (id: string) => {
-    try {
-      await apiClient.delete(`/api/jobs?id=${id}`, { withCredentials: true });
-    await fetchJobs();
-    } catch (error:any) {
       throw error;
     }
-  };
+  }, []);
+
+  const deleteJob = useCallback(async (id: string) => {
+    try {
+      await apiClient.delete(`/api/jobs?id=${id}`, { withCredentials: true });
+    } catch (error: any) {
+      throw error;
+    }
+  }, []);
 
   return { jobs, total, loading, error, addJobError, fetchJobs, addJob, deleteJob };
 };

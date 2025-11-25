@@ -1,6 +1,6 @@
 "use client";
 import { Search, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -14,27 +14,24 @@ const SearchBar = ({
   debounceMs = 500,
 }: SearchBarProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedTerm, setDebouncedTerm] = useState("");
+  const onSearchRef = useRef(onSearch);
 
-  // Debounce logic
+  // Keep ref updated
+  useEffect(() => {
+    onSearchRef.current = onSearch;
+  }, [onSearch]);
+
+  // Debounce and trigger search
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedTerm(searchTerm);
+      onSearchRef.current(searchTerm);
     }, debounceMs);
 
-    return () => {
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [searchTerm, debounceMs]);
-
-  // Trigger search when debounced term changes
-  useEffect(() => {
-    onSearch(debouncedTerm);
-  }, [debouncedTerm, onSearch]);
 
   const handleClear = () => {
     setSearchTerm("");
-    setDebouncedTerm("");
   };
 
   return (

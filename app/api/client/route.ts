@@ -89,6 +89,75 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const userId = await getUserFromRequest(request);
+    if (!userId) {
+      return errorResponse('Unauthorized', 401);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return errorResponse('Client ID is required');
+    }
+
+    const body = await request.json();
+    const { name, email, contactNo, company, address, isActive } = body;
+
+    if (name !== undefined && !name) {
+      return errorResponse('Name cannot be empty');
+    }
+    if (contactNo !== undefined && !contactNo) {
+      return errorResponse('Contact number cannot be empty');
+    }
+    if (address !== undefined && !address) {
+      return errorResponse('Address cannot be empty');
+    }
+
+    if (contactNo) {
+      const existing = await prisma.client.findFirst({
+        where: {
+          userId,
+          contactNo,
+          NOT: { id }
+        }
+      });
+
+      if (existing) {
+        return errorResponse('Client with this contact number already exists');
+      }
+    }
+
+    const existingClient = await prisma.client.findUnique({
+      where: { id }
+    });
+
+    if (!existingClient || existingClient.userId !== userId) {
+      return errorResponse('Client not found', 404);
+    }
+
+    const client = await prisma.client.update({
+      where: { id },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(email !== undefined && { email }),
+        ...(contactNo !== undefined && { contactNo }),
+        ...(company !== undefined && { company }),
+        ...(address !== undefined && { address }),
+        ...(isActive !== undefined && { isActive }),
+      }
+    });
+
+    return successResponse(client);
+
+  } catch (error) {
+    console.error('Update client error:', error);
+    return errorResponse('Failed to update client', 500);
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const userId = await getUserFromRequest(request);

@@ -1,35 +1,22 @@
 import { useForm } from "react-hook-form";
 import { X } from "lucide-react";
-import { forwardRef, useEffect } from "react";
-import { CreateJobData } from "../hooks/useJobs";
+import { forwardRef, useEffect, useCallback } from "react";
+import { CreateJobData, useJobs } from "../hooks/useJobs";
 import useNotification from "@/hooks/useNotification";
+import { useVehicle } from "@/hooks/useVehicle";
+import { useDriver } from "@/hooks/useDriver";
+import { useClient } from "@/hooks/useClient";
 
 type AddJobProps = {
   setIsModalOpen: (isOpen: boolean) => void;
-  addJob: (data: any) => Promise<void>;
-  fetchJobs: () => Promise<void>;
-  clients: Array<{ id: number; name: string }>;
-  drivers: Array<{ id: number; name: string }>;
-  vehicles: Array<{ 
-    id: string; 
-    registrationNo: string; 
-    model?: string;
-    vehicleType?: string;
-    vehicleTypeId?: string;
-  }>;
-  addJobError: Error | null;
+  defaultClientId?: string;
 };
 
 const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
   (
     {
       setIsModalOpen,
-      addJob,
-      fetchJobs,
-      clients,
-      drivers,
-      vehicles,
-      addJobError,
+      defaultClientId,
     },
     ref
   ) => {
@@ -42,7 +29,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
       setValue,
     } = useForm<CreateJobData>({
       defaultValues: {
-        clientId: "",
+        clientId: defaultClientId || "",
         driverId: "",
         vehicleId: "",
         vehicleTypeId: "",
@@ -63,7 +50,28 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
     const totalHours = watch("totalHours");
     const ratePerHour = watch("ratePerHour");
     const selectedVehicleId = watch("vehicleId");
-    const {triggerNotification, NotificationComponent} = useNotification();
+    const { triggerNotification, NotificationComponent } = useNotification();
+    const {vehicles, fetchAllVehicles} = useVehicle();
+    const { addJob, fetchJobs } = useJobs();
+    const {drivers, fetchAllDrivers} = useDriver();
+    const {clients, fetchAllClients} = useClient();
+
+    // Memoize fetch functions to prevent unnecessary re-renders
+    const memoizedFetchClients = useCallback(fetchAllClients, []);
+    const memoizedFetchDrivers = useCallback(fetchAllDrivers, []);
+    const memoizedFetchVehicles = useCallback(fetchAllVehicles, []);
+
+    useEffect(() => {
+      if (defaultClientId) {
+        setValue("clientId", defaultClientId);
+      }
+    }, [defaultClientId, setValue]);
+
+    useEffect(() => {
+      memoizedFetchClients();
+      memoizedFetchDrivers();
+      memoizedFetchVehicles();
+    }, [memoizedFetchClients, memoizedFetchDrivers, memoizedFetchVehicles]);
 
     // Auto-calculate amount when hours or rate changes
     useEffect(() => {
@@ -76,39 +84,39 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
     // Auto-fill vehicle type when vehicle is selected
     useEffect(() => {
       if (selectedVehicleId) {
-        const selectedVehicle = vehicles.find(v => v.id === selectedVehicleId);
+        const selectedVehicle = vehicles.find(
+          (v) => v.id === selectedVehicleId
+        );
         if (selectedVehicle) {
           setValue("vehicleTypeId", selectedVehicle.vehicleTypeId!);
         }
       }
     }, [selectedVehicleId, vehicles, setValue]);
 
-   const onSubmit = async (data: CreateJobData) => {
-  try {
-    const jobData: CreateJobData = {
-      ...data,
-      totalHours: Number(data.totalHours),
-      ratePerHour: Number(data.ratePerHour),
-      amount: Number(data.amount),
+    const onSubmit = async (data: CreateJobData) => {
+      try {
+        const jobData: CreateJobData = {
+          ...data,
+          totalHours: Number(data.totalHours),
+          ratePerHour: Number(data.ratePerHour),
+          amount: Number(data.amount),
+        };
+
+        await addJob(jobData);
+        await fetchJobs();
+        setIsModalOpen(false);
+        reset();
+      } catch (error: any) {
+        console.error("Error adding job:", error);
+
+        const msg =
+          error?.response?.data?.error ||
+          error?.message ||
+          "Something went wrong";
+
+        triggerNotification({ message: msg, type: "error" });
+      }
     };
-
-    await addJob(jobData);
-    console.log("-----------")
-    await fetchJobs();
-    setIsModalOpen(false);
-    reset();
-  } catch (error: any) {
-  console.error("Error adding job:", error);
-
-  const msg =
-    error?.response?.data?.error ||      
-    error?.message ||                   
-    "Something went wrong";
-
-  triggerNotification({ message: msg, type: "error" });
-}
-
-  }
 
     return (
       <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
@@ -128,7 +136,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Row 1: Client and Driver */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="clientId"
@@ -137,21 +145,25 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                   Client <span className="text-red-500">*</span>
                 </label>
                 <select
-                  id="clientId"
-                  {...register("clientId", {
-                    required: "Client is required",
-                  })}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
-                    errors.clientId ? "border-red-500" : "border-gray-300"
-                  }`}
-                >
-                  <option value="">Select client</option>
-                  {clients?.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name}
-                    </option>
-                  ))}
-                </select>
+  id="clientId"
+  {...register("clientId", {
+    required: "Client is required",
+  })}
+  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
+    errors.clientId ? "border-red-500" : "border-gray-300"
+  }`}
+  disabled={!!defaultClientId}
+>
+  {/* Show placeholder only if NO default client */}
+  {!defaultClientId && <option value="">Select client</option>}
+
+  {clients?.map((client) => (
+    <option key={client.id} value={client.id}>
+      {client.name}
+    </option>
+  ))}
+</select>
+
                 {errors.clientId && (
                   <p className="text-red-500 text-sm mt-1">
                     {errors.clientId.message}
@@ -191,61 +203,61 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
             </div>
 
             {/* Vehicle - Auto-fills vehicle type */}
-            <div className="flex gap-4 w-full">
-              <div className="w-1/2">
-              <label
-                htmlFor="vehicleId"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Vehicle <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="vehicleId"
-                {...register("vehicleId", {
-                  required: "Vehicle is required",
-                })}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
-                  errors.vehicleId ? "border-red-500" : "border-gray-300"
-                }`}
-              >
-                <option value="">Select vehicle</option>
-                {vehicles?.map((vehicle) => (
-                  <option key={vehicle.id} value={vehicle.id}>
-                    {vehicle.registrationNo}
-                    {vehicle.model && ` - ${vehicle.model}`}
-                  </option>
-                ))}
-              </select>
-              {errors.vehicleId && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.vehicleId.message}
-                </p>
-              )}
-            </div>
-            <div className="w-1/2">
-            <label
-              htmlFor="challanNo"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
-              Challan No <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              id="challanNo"
-              {...register("challanNo", {
-                required: "Challan No is required",
-              })}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
-                errors.challanNo ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="e.g., 12345"
-            />
-            {errors.challanNo && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.challanNo.message}
-              </p>
-            )}
-            </div>
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
+              <div className="flex-1">
+                <label
+                  htmlFor="vehicleId"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Vehicle <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="vehicleId"
+                  {...register("vehicleId", {
+                    required: "Vehicle is required",
+                  })}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
+                    errors.vehicleId ? "border-red-500" : "border-gray-300"
+                  }`}
+                >
+                  <option value="">Select vehicle</option>
+                  {vehicles?.map((vehicle) => (
+                    <option key={vehicle.id} value={vehicle.id}>
+                      {vehicle.registrationNo}
+                      {vehicle.model && ` - ${vehicle.model}`}
+                    </option>
+                  ))}
+                </select>
+                {errors.vehicleId && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.vehicleId.message}
+                  </p>
+                )}
+              </div>
+              <div className="flex-1">
+                <label
+                  htmlFor="challanNo"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Challan No <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="challanNo"
+                  {...register("challanNo", {
+                    required: "Challan No is required",
+                  })}
+                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
+                    errors.challanNo ? "border-red-500" : "border-gray-300"
+                  }`}
+                  placeholder="e.g., 12345"
+                />
+                {errors.challanNo && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.challanNo.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Hidden vehicle type field - auto-filled */}
@@ -278,7 +290,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
             </div>
 
             {/* Row 2: Date and Start Time */}
-            <div className="sm:grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label
                   htmlFor="date"
@@ -352,7 +364,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
             </div>
 
             {/* Row 3: Hours, Rate, and Auto-calculated Amount */}
-            <div className="sm:grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label
                   htmlFor="totalHours"
@@ -362,6 +374,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                 </label>
                 <input
                   type="number"
+                  step="0.01"
                   id="totalHours"
                   {...register("totalHours", {
                     required: "Total hours is required",
@@ -388,6 +401,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                 </label>
                 <input
                   type="number"
+                  step="0.01"
                   id="ratePerHour"
                   {...register("ratePerHour", {
                     required: "Rate per hour is required",
@@ -422,7 +436,9 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Auto-calculated: {totalHours || 0} × ₹{ratePerHour || 0} = ₹
-                  {((Number(totalHours) || 0) * (Number(ratePerHour) || 0)).toFixed(2)}
+                  {(
+                    (Number(totalHours) || 0) * (Number(ratePerHour) || 0)
+                  ).toFixed(2)}
                 </p>
               </div>
             </div>

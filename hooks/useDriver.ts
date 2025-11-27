@@ -42,6 +42,24 @@ export const useDriver = () => {
     }
   };
 
+  const fetchAllDrivers = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiClient.get("/api/drivers", {
+        withCredentials: true,
+      });
+      const data = res.data;
+      setDrivers(data.drivers);
+      setTotal(data.totalCount);
+    } catch (error: any) {
+      setError(error);
+      console.error("Error fetching drivers:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addDriver = async (data: DriverFormData) => {
     try {
       await apiClient.post("/api/drivers", data, {
@@ -72,5 +90,6 @@ export const useDriver = () => {
     deleteDriver,
     total,
     fetchDrivers,
+    fetchAllDrivers
   };
 };

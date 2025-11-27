@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Job } from "./useJobs";
 import { apiClient } from "./useAuth";
 
@@ -14,17 +13,23 @@ export interface Client {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  jobs?: Job[];
 }
 
-export function useClientJobs(clientId: string | string[] | undefined) {
+export function useClientJobs(
+  clientId: string | string[] | undefined,
+  page: number = 1,
+  limit: number = 10
+) {
   const [client, setClient] = useState<Client | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [totalHours, setTotalHours] = useState(0);
 
-  const fetchClientAndJobs = async () => {
-    if (!clientId || typeof clientId !== 'string') {
+  const fetchClientAndJobs = async ( page = 1, limit = 10) => {
+    if (!clientId || typeof clientId !== "string") {
       setError("Invalid client ID");
       setLoading(false);
       return;
@@ -34,17 +39,19 @@ export function useClientJobs(clientId: string | string[] | undefined) {
       setLoading(true);
       setError(null);
 
-      const clientResponse = await apiClient.get(`/api/client/${clientId}`, {
-        withCredentials: true,
-      });
-      
-      const clientData = clientResponse.data;
-      console.log("clientData", clientData);
-      setClient(clientData);
-      setJobs(clientData.jobs || []);
+      const res = await apiClient.get(
+        `/api/client/${clientId}?page=${page}&limit=${limit}`,
+        { withCredentials: true }
+      );
+
+      setClient(res.data.client);
+      setJobs(res.data.jobs);
+      setTotal(res.data.totalJobs);
+      setTotalAmount(res.data.totalAmount);
+      setTotalHours(res.data.totalHours);
     } catch (err: any) {
+      console.error("Error fetching client & jobs:", err);
       setError(err.response?.data?.message || "Failed to load data");
-      console.error("Error fetching client and jobs:", err);
     } finally {
       setLoading(false);
     }
@@ -52,7 +59,17 @@ export function useClientJobs(clientId: string | string[] | undefined) {
 
   useEffect(() => {
     fetchClientAndJobs();
-  }, [clientId]);
+  }, [clientId, page, limit]);
 
-  return { client, jobs, loading, error, refetch: fetchClientAndJobs };
+  return {
+    client,
+    jobs,
+    total,
+    loading,
+    error,
+    fetchClientAndJobs,
+    refetch: fetchClientAndJobs,
+    totalAmount,
+    totalHours
+  };
 }

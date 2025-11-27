@@ -1,18 +1,31 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useClientJobs } from "@/hooks/useClientJobs";
+import AddJob from "@/components/AddJob";
+import RenderPageNumbers from "@/components/RenderPageNumbers";
 
 const ClientDetails = () => {
   const params = useParams();
   const router = useRouter();
-  const { client, jobs, loading, error } = useClientJobs(params.id);
-  const [showPrintModal, setShowPrintModal] = useState(false);
+  const { client, loading, error, jobs, total, fetchClientAndJobs, totalAmount, totalHours } =
+    useClientJobs(params.id);
   const [jobFilter, setJobFilter] = useState<"all" | "billed" | "unbilled">(
     "all"
   );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 10;
+  const totalPages = Math.ceil(total / limit);
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
 
+  useEffect(() => {
+    fetchClientAndJobs(currentPage, limit);
+  }, [currentPage]);
   const filteredJobs = jobs.filter((job) => {
     if (jobFilter === "billed") return job.invoiceId !== null;
     if (jobFilter === "unbilled") return job.invoiceId === null;
@@ -63,40 +76,51 @@ const ClientDetails = () => {
 
   return (
     <div className="p-2 sm:p-4 md:p-8">
-      <button
+    <div className="flex gap-2 justify-between">
+        <button
         onClick={() => router.back()}
         className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 cursor-pointer"
       >
         <ArrowLeft size={20} />
         <span>Back to Clients</span>
       </button>
-      <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => setJobFilter("all")}
-          className={`px-4 py-2 rounded-md ${
-            jobFilter === "all" ? "bg-blue-600 text-white" : "bg-gray-100"
-          }`}
+      <button
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
         >
-          All Jobs
+          Add Job
         </button>
-        <button
-          onClick={() => setJobFilter("unbilled")}
-          className={`px-4 py-2 rounded-md ${
-            jobFilter === "unbilled"
-              ? "bg-orange-600 text-white"
-              : "bg-gray-100"
-          }`}
-        >
-          Unbilled ({jobs.filter((j) => !j.invoiceId).length})
-        </button>
-        <button
-          onClick={() => setJobFilter("billed")}
-          className={`px-4 py-2 rounded-md ${
-            jobFilter === "billed" ? "bg-green-600 text-white" : "bg-gray-100"
-          }`}
-        >
-          Billed ({jobs.filter((j) => j.invoiceId).length})
-        </button>
+    </div>
+      <div className="flex gap-2 mb-4 justify-end">
+        {/* <div className="flex gap-2">
+          <button
+            onClick={() => setJobFilter("all")}
+            className={`px-4 py-2 rounded-md ${
+              jobFilter === "all" ? "bg-blue-600 text-white" : "bg-gray-100"
+            }`}
+          >
+            All Jobs
+          </button>
+          <button
+            onClick={() => setJobFilter("unbilled")}
+            className={`px-4 py-2 rounded-md ${
+              jobFilter === "unbilled"
+                ? "bg-orange-600 text-white"
+                : "bg-gray-100"
+            }`}
+          >
+            Unbilled ({jobs.filter((j) => !j.invoiceId).length})
+          </button>
+          <button
+            onClick={() => setJobFilter("billed")}
+            className={`px-4 py-2 rounded-md ${
+              jobFilter === "billed" ? "bg-green-600 text-white" : "bg-gray-100"
+            }`}
+          >
+            Billed ({jobs.filter((j) => j.invoiceId).length})
+          </button>
+        </div> */}
+        
       </div>
 
       {/* Client Details Card */}
@@ -162,7 +186,7 @@ const ClientDetails = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold text-gray-900">Jobs</h2>
           <span className="text-sm text-gray-500">
-            Total: {jobs.length} {jobs.length === 1 ? "job" : "jobs"}
+            Total: {total} {total === 1 ? "job" : "jobs"}
           </span>
         </div>
 
@@ -176,14 +200,12 @@ const ClientDetails = () => {
               <thead>
                 <tr className="bg-gray-50 border-b-2 border-indigo-200 text-nowrap">
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                    S.No
+                    Ch. No
                   </th>
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                    Ch. No
-                  </th>
+
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                     Description
                   </th>
@@ -199,18 +221,17 @@ const ClientDetails = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {jobs.map((job, i) => (
+                {filteredJobs.map((job, i) => (
                   <tr
                     key={job.id}
                     className={`transition-colors hover:bg-[#f6faff] ${
                       i % 2 === 0 ? "bg-white" : "bg-gray-50"
                     }`}
                   >
-                    <td className="p-4 text-gray-900 font-medium">{i + 1}</td>
+                    <td className="p-4 text-gray-700">{job.challanNo}</td>
                     <td className="p-4 text-gray-700">
                       {new Date(job.date).toLocaleDateString()}
                     </td>
-                    <td className="p-4 text-gray-700">{job.challanNo}</td>
                     <td className="p-4 text-gray-700 text-nowrap">
                       {formatTime(job.startTime)} - {formatTime(job.endTime!)}
                     </td>
@@ -232,6 +253,30 @@ const ClientDetails = () => {
           </div>
         )}
 
+        {total > 0 && totalPages > 1 && (
+          <div className="flex justify-center items-center space-x-2 mt-4">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"
+            >
+              <ChevronLeftIcon className="w-5 h-5" />
+            </button>
+
+            <RenderPageNumbers
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="w-6 h-6 text-gray-500 hover:text-gray-700 cursor-pointer"
+            >
+              <ChevronRightIcon className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
         {/* Summary Section */}
         {jobs.length > 0 && (
           <div className="mt-6 pt-6 border-t border-gray-200">
@@ -239,7 +284,7 @@ const ClientDetails = () => {
               <div className="bg-blue-50 p-4 rounded-lg">
                 <p className="text-sm text-blue-600 font-medium">Total Jobs</p>
                 <p className="text-2xl font-bold text-blue-900">
-                  {jobs.length}
+                  {total}
                 </p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg">
@@ -247,9 +292,7 @@ const ClientDetails = () => {
                   Total Hours
                 </p>
                 <p className="text-2xl font-bold text-green-900">
-                  {jobs
-                    .reduce((sum, job) => sum + (job.totalHours || 0), 0)
-                    .toFixed(1)}
+                  {totalHours.toFixed(2)}
                   h
                 </p>
               </div>
@@ -258,10 +301,7 @@ const ClientDetails = () => {
                   Total Amount
                 </p>
                 <p className="text-2xl font-bold text-purple-900">
-                  ₹
-                  {jobs
-                    .reduce((sum, job) => sum + (job.amount || 0), 0)
-                    .toFixed(2)}
+                  ₹ {totalAmount.toFixed(2)}
                 </p>
               </div>
             </div>
@@ -278,6 +318,9 @@ const ClientDetails = () => {
           userCompany={userCompany}
         />
       )} */}
+      {isModalOpen && (
+        <AddJob setIsModalOpen={setIsModalOpen} defaultClientId={client.id} />
+      )}
     </div>
   );
 };

@@ -1,6 +1,6 @@
 "use client";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiClient } from "./useAuth";
 
 export type Client = {
@@ -33,7 +33,7 @@ export const useClient = () => {
       });
       const data = res.data;
       setClients(data.clients);
-      setTotal(data.total);
+      setTotal(data.totalCount);
     } catch (error: any) {
       setError(error);
       console.error("Error fetching clients:", error);
@@ -41,6 +41,23 @@ export const useClient = () => {
       setLoading(false);
     }
   };
+const fetchAllClients = async () => {
+  setLoading(true);
+  setError(null);
+  try {
+    const res = await apiClient.get("/api/client", {
+      withCredentials: true,
+    });
+    const data = res.data;
+    setClients(data.clients);
+    setTotal(data.totalCount);
+  } catch (error: any) {
+    setError(error);
+    console.error("Error fetching clients:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const addClient = async (data: Omit<Client, "id">) => {
     try {
@@ -54,6 +71,20 @@ export const useClient = () => {
     }
   };
 
+  const updateClient = useCallback(
+    async (id: string, data: Partial<Client>) => {
+      try {
+        await apiClient.patch(`/api/client?id=${id}`, data, {
+          withCredentials: true,
+        });
+      } catch (error) {
+        console.error("Error updating client:", error);
+        throw error;
+      }
+    },
+    []
+  );
+
   const deleteClient = async (id: number) => {
     try {
       await apiClient.get(`/api/client?id=${id}`, {
@@ -66,5 +97,15 @@ export const useClient = () => {
     }
   };
 
-  return { clients, loading, error, addClient, deleteClient, fetchClients, total };
+  return {
+    clients,
+    loading,
+    error,
+    addClient,
+    deleteClient,
+    updateClient,
+    fetchClients,
+    fetchAllClients,
+    total,
+  };
 };

@@ -6,12 +6,8 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react";
-import { RefObject, useRef, useState, useEffect, useCallback } from "react";
-import { useOnclickOutside } from "@/hooks/useOnclickOutside";
+import { useState, useEffect, useCallback } from "react";
 import { useJobs } from "@/hooks/useJobs";
-import { useClient } from "@/hooks/useClient";
-import { useDriver } from "@/hooks/useDriver";
-import { useVehicle } from "@/hooks/useVehicle";
 import SearchBar from "@/components/SearchBar";
 import RenderPageNumbers from "@/components/RenderPageNumbers";
 import DeleteModal from "@/components/DeleteModal";
@@ -23,7 +19,7 @@ const Jobs = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
   const { triggerNotification, NotificationComponent } = useNotification();
- const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const limit = 10;
   const {
@@ -31,33 +27,19 @@ const Jobs = () => {
     total,
     loading,
     error,
-    addJobError,
-    addJob,
     deleteJob,
     fetchJobs,
   } = useJobs();
-  const { clients, fetchClients } = useClient();
-  const { drivers, fetchDrivers } = useDriver();
-  const { vehicles, fetchVehicles } = useVehicle();
   const totalPages = Math.ceil(total / limit);
 
-  useEffect(() => {
-    fetchClients(1, 20);
-    fetchDrivers(1, 20);
-    fetchVehicles(1, 20);
+  const handleSearch = useCallback((query: string) => {
+    setSearchTerm(query.trim());
+    setCurrentPage(1);
   }, []);
 
- 
-
-const handleSearch = useCallback((query: string) => {
-  setSearchTerm(query.trim());
-  setCurrentPage(1);
-}, []);
-
   useEffect(() => {
-  fetchJobs(currentPage, limit, searchTerm);
-}, [currentPage, searchTerm]);
-
+    fetchJobs(currentPage, limit, searchTerm);
+  }, [currentPage, searchTerm]);
 
   const handleEdit = (item: any) => console.log("Edit:", item);
 
@@ -75,7 +57,10 @@ const handleSearch = useCallback((query: string) => {
     try {
       if (item?.id) await deleteJob(item.id);
       setIsDeleteModalOpen(false);
-      triggerNotification({ message: "Job deleted successfully", type: "success" });
+      triggerNotification({
+        message: "Job deleted successfully",
+        type: "success",
+      });
     } catch (error) {
       triggerNotification({ message: "Something went wrong", type: "error" });
     }
@@ -272,17 +257,7 @@ const handleSearch = useCallback((query: string) => {
         )}
 
         {/* Add Job Modal */}
-        {isModalOpen && (
-          <AddJob
-            setIsModalOpen={setIsModalOpen}
-            addJobError={addJobError}
-            addJob={addJob}
-            fetchJobs={fetchJobs}
-            clients={clients || []}
-            drivers={drivers || []}
-            vehicles={vehicles || []}
-          />
-        )}
+        {isModalOpen && <AddJob setIsModalOpen={setIsModalOpen} />}
 
         {/* Delete Modal */}
         {isDeleteModalOpen && (

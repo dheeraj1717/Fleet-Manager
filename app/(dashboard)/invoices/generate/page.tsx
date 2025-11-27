@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import { useClient } from "@/hooks/useClient";
 import { apiClient } from "@/hooks/useAuth";
+import useNotification from "@/hooks/useNotification";
 
 interface Client {
   id: string;
@@ -25,6 +26,7 @@ const GenerateInvoice = () => {
   const [unbilledJobs, setUnbilledJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { fetchClients, clients } = useClient();
+  const {NotificationComponent, triggerNotification} = useNotification();
 useEffect(() => {
  fetchClients();
 },[])
@@ -100,10 +102,13 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
 
     const invoice = response.data;
 
-    router.push(`(dashboard)/invoices/${invoice.id}`);
+    router.push(`/invoices/${invoice.id}`);
   } catch (error: any) {
     console.error("Error generating invoice:", error);
-    alert(error.response?.data?.error || "Failed to generate invoice");
+    triggerNotification({
+      message: error?.response?.data?.error || "Something went wrong",
+      type: "error",
+    })
   }
 };
 
@@ -184,7 +189,7 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
               >
                 <option value="">Select client</option>
                 {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
+                  <option key={client.id} value={client.id} className="truncate">
                     {client.name} {client.company && `(${client.company})`}
                   </option>
                 ))}
@@ -349,6 +354,7 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
           )}
         </div>
       </div>
+      {NotificationComponent}
     </div>
   );
 };

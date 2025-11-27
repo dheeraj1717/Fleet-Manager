@@ -45,6 +45,24 @@ export const useVehicle = () => {
     }
   };
 
+  const fetchAllVehicles = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiClient.get(`/api/vehicle`, {
+        withCredentials: true,
+      });
+      const data = res.data;
+      setVehicles(data.vehicles);
+      setTotal(data.total || 0);
+    } catch (error: any) {
+      setError(error);
+      console.error("Error fetching vehicles:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addVehicle = async (data: VehicleFormData) => {
     try {
       await apiClient.post(`/api/vehicle`, data, { withCredentials: true });
@@ -54,5 +72,5 @@ export const useVehicle = () => {
     }
   };
 
-  return { vehicles, loading, error, total, fetchVehicles, addVehicle };
+  return { vehicles, loading, error, total, fetchVehicles, addVehicle, fetchAllVehicles };
 };

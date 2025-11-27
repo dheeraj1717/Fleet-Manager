@@ -165,7 +165,18 @@ const InvoiceDetails = () => {
           </p>
         </div>
       </div>
-
+    {/* Add Payment Button (if balance > 0) */}
+      {invoice.balanceAmount > 0 && (
+        <div className="my-4 flex justify-end">
+          <button
+            onClick={() => router.push(`/invoices/${invoice.id}/payment`)}
+            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium cursor-pointer"
+          >
+            <DollarSign size={20} />
+            Record Payment
+          </button>
+        </div>
+      )}
       {/* Jobs Table */}
       <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 sm:p-6">
         <h3 className="text-xl font-semibold mb-4">Jobs Included</h3>
@@ -285,19 +296,6 @@ const InvoiceDetails = () => {
               </tbody>
             </table>
           </div>
-        </div>
-      )}
-
-      {/* Add Payment Button (if balance > 0) */}
-      {invoice.balanceAmount > 0 && (
-        <div className="mt-6 flex justify-end">
-          <button
-            onClick={() => router.push(`/invoices/${invoice.id}/payment`)}
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-medium"
-          >
-            <DollarSign size={20} />
-            Record Payment
-          </button>
         </div>
       )}
 

@@ -1,5 +1,11 @@
 "use client";
-import { Plus, Pencil, Trash2, ChevronRightIcon, ChevronLeftIcon } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+} from "lucide-react";
 import { RefObject, useEffect, useRef, useState } from "react";
 import { useOnclickOutside } from "@/hooks/useOnclickOutside";
 import DeleteModal from "@/components/DeleteModal";
@@ -8,13 +14,26 @@ import { useRouter } from "next/navigation";
 import SearchBar from "@/components/SearchBar";
 import RenderPageNumbers from "@/components/RenderPageNumbers";
 import AddClient from "@/components/AddClient";
+import EditClient from "@/components/EditClient";
 
 const Clients = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const addClientRef = useRef<HTMLElement>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
-  const { clients, loading, error, addClient, deleteClient, fetchClients, total } = useClient();
+  const [selectedClient, setSelectedClient] = useState<any>(null);
+  const addClientRef = useRef<HTMLElement>(null);
+    const editClientRef = useRef<HTMLElement>(null);
+  const {
+    clients,
+    loading,
+    error,
+    addClient,
+    deleteClient,
+    updateClient,
+    fetchClients,
+    total,
+  } = useClient();
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -22,33 +41,37 @@ const Clients = () => {
   const totalPages = Math.ceil(total / limit);
 
   useEffect(() => {
-      fetchClients(currentPage, limit, searchTerm);
-    }, [currentPage, searchTerm]);
-  
-    const handlePageChange = (page: number) => {
-      if (page < 1 || page > totalPages) return;
-      setCurrentPage(page);
-    };
-  
-    const handleSearch = (query: string) => {
-      setSearchTerm(query.trim());
-      setCurrentPage(1); // reset to page 1 on new search
-    };
+    fetchClients(currentPage, limit, searchTerm);
+  }, [currentPage, searchTerm]);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchTerm(query.trim());
+    setCurrentPage(1); // reset to page 1 on new search
+  };
 
   const handleRowClick = (clientId: string) => {
     router.push(`/clients/${clientId}`);
   };
   const handleEdit = (e: React.MouseEvent, item: any) => {
     e.stopPropagation();
-    console.log("Edit:", item);
-    // TODO: Implement edit functionality
+    setSelectedClient(item);
+    setIsEditModalOpen(true);
   };
 
-  const handleDelete = async (e: React.MouseEvent, item: any) => {
-    e.stopPropagation();
-    setItemToDelete(item);
-    setIsDeleteModalOpen(true);
-  };
+  useOnclickOutside(editClientRef as React.RefObject<HTMLElement>, () => {
+    setIsEditModalOpen(false);
+  });
+
+  // const handleDelete = async (e: React.MouseEvent, item: any) => {
+  //   e.stopPropagation();
+  //   setItemToDelete(item);
+  //   setIsDeleteModalOpen(true);
+  // };
 
   useOnclickOutside(addClientRef as React.RefObject<HTMLElement>, () => {
     setIsModalOpen(false);
@@ -80,18 +103,25 @@ const Clients = () => {
         </div>
       </div>
 
-        {/* Search Bar */}
+      {/* Search Bar */}
       <div className="max-w-sm mt-6">
-        <SearchBar onSearch={handleSearch} placeholder="Search by name or contact..." />
+        <SearchBar
+          onSearch={handleSearch}
+          placeholder="Search by name or contact..."
+        />
       </div>
 
       {/* Clients Table */}
       <div className="w-full mt-10 max-w-6xl mx-auto sm:px-4">
         <div className="bg-white rounded-lg shadow-md overflow-auto border border-gray-200">
           {loading ? (
-            <div className="p-8 text-center text-gray-500">Loading clients...</div>
+            <div className="p-8 text-center text-gray-500">
+              Loading clients...
+            </div>
           ) : error ? (
-            <div className="p-8 text-center text-red-500">Error loading clients</div>
+            <div className="p-8 text-center text-red-500">
+              Error loading clients
+            </div>
           ) : !clients || clients.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               No clients found. Add your first client!
@@ -123,7 +153,7 @@ const Clients = () => {
               <tbody className="divide-y divide-gray-200">
                 {clients.map((client: any, i: number) => (
                   <tr
-                  onClick={() => handleRowClick(client.id)}
+                    onClick={() => handleRowClick(client.id)}
                     key={client.id}
                     className={`transition-colors cursor-pointer hover:bg-[#f6faff] ${
                       i % 2 === 0 ? "bg-white" : "bg-gray-50"
@@ -133,13 +163,9 @@ const Clients = () => {
                       {client.name}
                     </td>
                     <td className="p-4 text-gray-700">{client.contactNo}</td>
-                    <td className="p-4 text-gray-700">
-                      {client.email || "-"}
-                    </td>
-                    <td className="p-4 text-gray-700">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-                        {client.company || "N/A"}
-                      </span>
+                    <td className="p-4 text-gray-700">{client.email || "-"}</td>
+                    <td className="p-4 text-gray-700 truncate max-w-xs">
+                      {client.company || "N/A"}
                     </td>
                     <td className="p-4 text-gray-700 max-w-xs truncate">
                       {client.address}
@@ -147,19 +173,19 @@ const Clients = () => {
                     <td className="p-4">
                       <div className="flex items-center justify-center gap-2">
                         <button
-                          onClick={(e) => handleEdit(e,client)}
+                          onClick={(e) => handleEdit(e, client)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
                           title="Edit"
                         >
                           <Pencil size={18} />
                         </button>
-                        <button
+                        {/* <button
                           onClick={(e) => handleDelete(e, client)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
                           title="Delete"
                         >
                           <Trash2 size={18} />
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>
@@ -170,7 +196,7 @@ const Clients = () => {
         </div>
       </div>
 
-       {/* Pagination */}
+      {/* Pagination */}
       {total > 0 && totalPages > 1 && (
         <div className="flex justify-center items-center space-x-2 mt-4">
           <button
@@ -211,6 +237,15 @@ const Clients = () => {
           item={itemToDelete}
           heading="Delete Client"
           description="Are you sure you want to delete this client? This action cannot be undone."
+        />
+      )}
+           {isEditModalOpen && selectedClient && (
+        <EditClient
+          ref={editClientRef as RefObject<HTMLDivElement>}
+          setIsModalOpen={setIsEditModalOpen}
+          updateClient={updateClient}
+          fetchClients={() => fetchClients(currentPage, limit, searchTerm)}
+          client={selectedClient}
         />
       )}
     </div>

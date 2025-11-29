@@ -48,10 +48,10 @@ const Sidebar = () => {
       }`}
     >
       {/* Header */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
+      <div className="h-16 flex items-center justify-between px-2 border-b border-gray-200">
         <h1
-          className={`font-bold text-xl text-gray-800 transition-opacity duration-200 ${
-            isCollapsed ? "opacity-0 w-0" : "opacity-100"
+          className={`font-bold text-xl text-gray-800 transition-opacity duration-200 pl-2 ${
+            isCollapsed ? "hidden w-0" : "opacity-100"
           }`}
         >
           Fleet Manager

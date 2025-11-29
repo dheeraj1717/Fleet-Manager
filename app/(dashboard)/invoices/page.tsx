@@ -199,7 +199,7 @@ const Invoices = () => {
                             e.stopPropagation();
                             router.push(`/invoices/${invoice.id}`);
                           }}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
                           title="View Details"
                         >
                           <FileText size={18} />
@@ -210,7 +210,7 @@ const Invoices = () => {
                               e.stopPropagation();
                               router.push(`/invoices/${invoice.id}/payment`);
                             }}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                            className="p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors cursor-pointer"
                             title="Add Payment"
                           >
                             <DollarSign size={18} />

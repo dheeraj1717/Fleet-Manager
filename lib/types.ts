@@ -1,3 +1,4 @@
+import { SocketAddress } from "net";
 import z from "zod";
 
 export const CreateUserSchema = z.object({
@@ -9,6 +10,7 @@ export const CreateUserSchema = z.object({
   password: z.string(),
   companyName: z.string(),
   contactNo: z.string(),
+  address: z.string()
 });
 
 export const LoginSchema = z.object({

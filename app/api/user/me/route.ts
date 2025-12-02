@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
         email: true,
         companyName: true,
         contactNo: true,
+        address: true,
         // Don't send password!
       },
     });

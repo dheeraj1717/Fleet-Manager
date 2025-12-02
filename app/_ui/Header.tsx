@@ -1,15 +1,17 @@
 "use client";
-import { ChevronDown, LogOut } from "lucide-react";
+import { ChevronDown, LogOut, User } from "lucide-react";
 import { useState, useRef, RefObject } from "react";
 import useAuth from "@/hooks/useAuth";
 import { useUser } from "@/hooks/useUser";
 import { useOnclickOutside } from "@/hooks/useOnclickOutside";
+import { useRouter } from "next/navigation";
 
 const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { logout } = useAuth();
   const { user, loading } = useUser();
+  const router = useRouter();
 
 
   useOnclickOutside(dropdownRef as RefObject<HTMLDivElement>, () => setIsDropdownOpen(false));
@@ -65,6 +67,13 @@ const Header = () => {
           {/* Dropdown Menu */}
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+              <button
+                onClick={() => router.push("/profile")}
+                className="w-full flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors cursor-pointer"
+              >
+                <User size={18} />
+                Profile
+              </button>
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"

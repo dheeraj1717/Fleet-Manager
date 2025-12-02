@@ -248,7 +248,7 @@ const Invoices = () => {
       )}
 
       {/* Summary Cards */}
-      {!loading && invoices.length > 0 && (
+      {/* {!loading && invoices.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
           <div className="bg-white p-6 rounded-lg shadow border border-gray-200">
             <p className="text-sm text-gray-600 mb-1">Total Invoices</p>
@@ -284,7 +284,7 @@ const Invoices = () => {
             </p>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

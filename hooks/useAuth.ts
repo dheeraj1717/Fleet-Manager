@@ -119,5 +119,20 @@ export default function useAuth() {
     }
   };
 
+  const singup = async (data: LoginData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiClient.post("/api/auth/signup", data);
+      console.log(res.data);
+      return res.data;
+    } catch (error: any) {
+      setError(error);
+      console.error("Error logging in:", error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }
   return { login, logout, loading, error };
 }

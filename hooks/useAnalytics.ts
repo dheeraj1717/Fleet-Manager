@@ -57,10 +57,32 @@ export function useAnalytics(period: number = 30) {
       setLoading(true);
       setError(null);
       try {
-        const response = await apiClient.get(`/api/analytics?period=${period}`, {
-          withCredentials: true,
+        const [overviewRes, chartsRes, recentRes, alertsRes] = await Promise.all([
+          apiClient.get(`/api/stats/overview?period=${period}`, {
+            withCredentials: true,
+          }),
+          apiClient.get(`/api/stats/charts?period=${period}`, {
+            withCredentials: true,
+          }),
+          apiClient.get(`/api/stats/recent?period=${period}`, {
+            withCredentials: true,
+          }),
+          apiClient.get(`/api/stats/alerts?period=${period}`, {
+            withCredentials: true,
+          }),
+        ]);
+
+        const overviewData = overviewRes.data.data || overviewRes.data;
+        const chartsData = chartsRes.data.data || chartsRes.data;
+        const recentData = recentRes.data.data || recentRes.data;
+        const alertsData = alertsRes.data.data || alertsRes.data;
+
+        setData({
+          ...overviewData,
+          charts: chartsData,
+          recentActivity: recentData,
+          alerts: alertsData,
         });
-        setData(response.data.data || response.data);
       } catch (err: any) {
         setError(err);
         console.error("Error fetching analytics:", err);

@@ -58,6 +58,8 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
               max-width: 210mm;
               margin: 0 auto;
               page-break-after: always;
+              min-height: 297mm; /* A4 height */
+              position: relative;
             }
             .page:last-child {
               page-break-after: auto;
@@ -68,6 +70,15 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
               }
               .no-print {
                 display: none;
+              }
+              .page {
+                 margin: 0;
+                 border: initial;
+                 width: 100%;
+                 min-height: initial;
+                 box-shadow: initial;
+                 background: initial;
+                 page-break-after: always;
               }
             }
           </style>
@@ -86,7 +97,26 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
   };
 
   const handleDownload = async () => {
-    alert("PDF download requires html2pdf.js library. Please use the Print option or integrate the library.");
+    const element = printRef.current;
+    if (!element) return;
+
+    try {
+      // Dynamically import html2pdf.js to avoid SSR issues
+      const html2pdf = (await import("html2pdf.js")).default;
+
+      const opt = {
+        margin: 0,
+        filename: `Invoice_${invoice.invoiceNumber}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      };
+
+      html2pdf().from(element).set(opt).save();
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF. Please try again.");
+    }
   };
 
   const numberToWords = (num: number): string => {
@@ -122,7 +152,6 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
       "Fourteen",
       "Fifteen",
       "Sixteen",
-      "Seventeen",
       "Eighteen",
       "Nineteen",
     ];
@@ -204,15 +233,18 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
         </div>
 
         {/* Print Content */}
-        <div ref={printRef} className="p-8">
+        <div ref={printRef} className="p-0">
           {/* Page 1: Tax Invoice */}
-          <div className="page">
+          <div className="page" style={{ padding: "20px", boxSizing: "border-box", height: "297mm", position: "relative" }}>
             <style>
               {`
                 .tax-invoice-page {
                   border: 2px solid #000;
                   padding: 20px;
                   font-family: Arial, sans-serif;
+                  height: 100%;
+                  box-sizing: border-box;
+                  position: relative;
                 }
                 .tax-invoice-header {
                   text-align: center;
@@ -299,6 +331,10 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
                 .tax-signature-section {
                   text-align: right;
                   margin-top: 40px;
+                  position: absolute;
+                  bottom: 20px;
+                  right: 20px;
+                  width: 100%;
                 }
                 .original-copy {
                   position: absolute;
@@ -310,7 +346,7 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
               `}
             </style>
 
-            <div className="tax-invoice-page" style={{ position: "relative" }}>
+            <div className="tax-invoice-page">
               <div className="original-copy">Original Copy</div>
 
               <div style={{ fontSize: "11px", marginBottom: "5px" }}>
@@ -445,7 +481,7 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
               )}
 
               <div className="tax-signature-section">
-                <div style={{ fontSize: "12px", marginBottom: "5px" }}>
+                <div style={{ fontSize: "12px", marginBottom: "5px", textAlign: "right" }}>
                   {userCompany.name}
                 </div>
                 <div
@@ -455,6 +491,8 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
                     display: "inline-block",
                     paddingTop: "5px",
                     minWidth: "200px",
+                    textAlign: "center",
+                    float: "right"
                   }}
                 >
                   Authorised Signatory
@@ -464,13 +502,15 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
           </div>
 
           {/* Page 2: Work Details */}
-          <div className="page mb-8">
+          <div className="page" style={{ padding: "20px", boxSizing: "border-box", minHeight: "297mm" }}>
             <style>
               {`
                 .work-details-page {
                   border: 2px solid #000;
                   padding: 20px;
                   font-family: Arial, sans-serif;
+                  min-height: 100%;
+                  box-sizing: border-box;
                 }
                 .work-details-header {
                   text-align: center;

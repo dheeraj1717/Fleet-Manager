@@ -118,6 +118,12 @@ export async function DELETE(request: NextRequest) {
       return errorResponse("Driver ID is required");
     }
 
+    // Check for independent records
+    const jobCount = await prisma.job.count({ where: { driverId: id } });
+    if (jobCount > 0) {
+      return errorResponse("Cannot delete driver with associated jobs", 400);
+    }
+
     const driver = await prisma.driver.delete({
       where: {
         id,

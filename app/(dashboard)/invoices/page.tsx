@@ -23,8 +23,8 @@ const Invoices = () => {
   const totalPages = Math.ceil(total / limit);
 
   useEffect(() => {
-    fetchInvoices(currentPage, limit, searchTerm);
-  }, [currentPage, searchTerm]);
+    fetchInvoices(currentPage, limit, searchTerm, filter);
+  }, [currentPage, searchTerm, filter]);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
@@ -77,12 +77,15 @@ const Invoices = () => {
 
       {/* Filter Tabs */}
       <div className="flex gap-2 mb-6 border-b border-gray-200 overflow-auto">
-        {["all", "DRAFT", "SENT", "PARTIAL", "PAID", "OVERDUE"].map(
+        {["all", "PARTIAL", "PAID"].map(
           (status) => (
             <button
               key={status}
-              onClick={() => setFilter(status)}
-              className={`px-4 py-2 font-medium transition-colors ${
+              onClick={() => {
+                setFilter(status);
+                setCurrentPage(1);
+              }}
+              className={`px-4 py-2 font-medium transition-colors cursor-pointer ${
                 filter === status
                   ? "text-blue-600 border-b-2 border-blue-600"
                   : "text-gray-600 hover:text-gray-900"

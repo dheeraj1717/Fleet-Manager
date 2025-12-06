@@ -172,6 +172,14 @@ export async function DELETE(request: NextRequest) {
       return errorResponse('Client ID is required');
     }
 
+    // Check for independent records
+    const jobCount = await prisma.job.count({ where: { clientId: id } });
+    const invoiceCount = await prisma.invoice.count({ where: { clientId: id } });
+
+    if (jobCount > 0 || invoiceCount > 0) {
+      return errorResponse("Cannot delete client with associated jobs or invoices", 400);
+    }
+
     const client = await prisma.client.delete({
       where: {
         id,

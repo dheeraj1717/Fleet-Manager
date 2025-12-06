@@ -92,7 +92,11 @@ export async function POST(request: NextRequest) {
       return errorResponse("Invoice not found", 404);
     }
 
-    if (amount > invoice.balanceAmount) {
+    // Fix precision issues
+    const validAmount = Math.round(parseFloat(amount.toString()) * 100) / 100;
+    const validBalance = Math.round(invoice.balanceAmount * 100) / 100;
+
+    if (validAmount > validBalance) {
       return errorResponse("Payment amount exceeds balance amount", 400);
     }
 
@@ -116,8 +120,9 @@ export async function POST(request: NextRequest) {
 
 
     // Update invoice amounts
-    const newPaidAmount = invoice.paidAmount + parseFloat(amount.toString());
-    const newBalanceAmount = invoice.balanceAmount - parseFloat(amount.toString());
+    // Update invoice amounts with precision
+    const newPaidAmount = Math.round((invoice.paidAmount + validAmount) * 100) / 100;
+    const newBalanceAmount = Math.round((invoice.balanceAmount - validAmount) * 100) / 100;
     
     let newStatus = invoice.status;
     if (newBalanceAmount === 0) {

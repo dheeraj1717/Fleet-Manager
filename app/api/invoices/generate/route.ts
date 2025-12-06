@@ -53,31 +53,38 @@ export async function POST(request: NextRequest) {
 
 
     // Create invoice
-    const invoice = await prisma.invoice.create({
-      data: {
-        userId,
-        clientId,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        subtotal,
-        tax: taxAmount,
-        totalAmount,
-        balanceAmount: totalAmount,
-        notes: notes || null,
-        status: 'SENT'
-      }
-    });
+    // Create invoice and link jobs in a transaction
+    const invoice = await prisma.$transaction(async (tx) => {
+        const newInvoice = await tx.invoice.create({
+          data: {
+            userId,
+            clientId,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            subtotal,
+            tax: taxAmount,
+            totalAmount,
+            balanceAmount: totalAmount,
+            notes: notes || null,
+            status: 'SENT'
+          }
+        });
 
+        const updateResult = await tx.job.updateMany({
+          where: {
+            id: { in: jobs.map(j => j.id) },
+            invoiceId: null // Ensure they haven't been picked up by another process
+          },
+          data: {
+            invoiceId: newInvoice.id
+          }
+        });
 
-
-    // Link jobs to invoice
-    const updateResult = await prisma.job.updateMany({
-      where: {
-        id: { in: jobs.map(j => j.id) }
-      },
-      data: {
-        invoiceId: invoice.id
-      }
+        if (updateResult.count !== jobs.length) {
+            throw new Error("Some jobs were already invoiced during this process");
+        }
+        
+        return newInvoice;
     });
 
 

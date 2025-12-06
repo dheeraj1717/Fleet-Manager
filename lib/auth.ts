@@ -4,9 +4,11 @@ import { prisma } from "./prisma";
 import crypto from "crypto";
 import { cookies } from "next/headers";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "secret112233"
-);
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined");
+}
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function generateAccessToken(userId: string) {
   return await new SignJWT({ userId, type: "access" })

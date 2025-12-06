@@ -167,6 +167,7 @@ export async function POST(request: NextRequest) {
     const challanNoExists = await prisma.job.findFirst({
       where: {
         challanNo,
+        userId,
       },
     });
     if (challanNoExists) {

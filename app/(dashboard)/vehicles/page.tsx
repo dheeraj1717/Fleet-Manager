@@ -51,7 +51,7 @@ const Vehicles = () => {
     fetchVehicleTypes();
   }, [currentPage, searchTerm]);
 
-  const handleEdit = (item: any) => console.log("Edit:", item);
+  const handleEdit = (item: any) => {};
   const handleDelete = (item: any) => {
     setItemToDelete(item);
     setIsDeleteModalOpen(true);
@@ -303,7 +303,7 @@ const Vehicles = () => {
       {isDeleteModalOpen && (
         <DeleteModal
           setIsModalOpen={setIsDeleteModalOpen}
-          onDelete={() => console.log("Delete")}
+          onDelete={() => {}}
           item={itemToDelete}
           heading="Delete Vehicle"
           description="Are you sure you want to delete this vehicle?"

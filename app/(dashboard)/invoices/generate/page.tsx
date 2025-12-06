@@ -43,46 +43,27 @@ useEffect(() => {
   const endDate = watch("endDate");
 
   // Debug log to see when values change
-  useEffect(() => {
-    console.log("Values changed:", { clientId, startDate, endDate });
-  }, [clientId, startDate, endDate]);
 
-  useEffect(() => {
-    console.log("Checking conditions...", {
-      hasClientId: !!clientId,
-      hasStartDate: !!startDate,
-      hasEndDate: !!endDate,
-      allPresent: !!(clientId && startDate && endDate)
-    });
 
-    if (clientId && startDate && endDate) {
-      console.log("All conditions met, fetching jobs...");
-      fetchUnbilledJobs();
-    }
-  }, [clientId, startDate, endDate]);
+
 
     const fetchUnbilledJobs = async () => {
-      console.log("-----------");
-      console.log("Fetching unbilled jobs with params:", {
-        clientId,
-        startDate,
-        endDate
-      });
+
 
       try {
         setLoading(true);
         const url = `/api/jobs?clientId=${clientId}&invoiceId=null&startDate=${startDate}&endDate=${endDate}&status=COMPLETED`;
-        console.log("API URL:", url);
+
 
         const response = await apiClient.get(url, {
           withCredentials: true,
         });
 
-        console.log("API Response:", response.data);
+
 
         // Fix: Access the data correctly
         const jobsData = response.data.jobs || response.data || [];
-        console.log("Fetched unbilled jobs:", jobsData);
+
         setUnbilledJobs(jobsData);
       } catch (error) {
         console.error("Error fetching unbilled jobs:", error);
@@ -98,7 +79,7 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
       withCredentials: true,
     });
 
-    console.log("Invoice generated:", response.data);
+
 
     const invoice = response.data;
 
@@ -131,7 +112,7 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
     const startDateStr = firstDay.toISOString().split("T")[0];
     const endDateStr = lastDay.toISOString().split("T")[0];
 
-    console.log("Setting current month:", { startDateStr, endDateStr });
+
 
     setValue("startDate", startDateStr);
     setValue("endDate", endDateStr);
@@ -145,7 +126,7 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
     const startDateStr = firstDay.toISOString().split("T")[0];
     const endDateStr = lastDay.toISOString().split("T")[0];
 
-    console.log("Setting last month:", { startDateStr, endDateStr });
+
 
     setValue("startDate", startDateStr);
     setValue("endDate", endDateStr);

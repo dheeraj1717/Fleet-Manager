@@ -92,7 +92,7 @@ export default function useAuth() {
     setError(null);
     try {
       const res = await apiClient.post("/api/auth/login", data);
-      console.log(res.data);
+
       return res.data;
     } catch (error: any) {
       setError(error);
@@ -124,7 +124,7 @@ export default function useAuth() {
     setError(null);
     try {
       const res = await apiClient.post("/api/auth/signup", data);
-      console.log(res.data);
+
       return res.data;
     } catch (error: any) {
       setError(error);

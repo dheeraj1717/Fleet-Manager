@@ -37,7 +37,7 @@ const AddVehicleType = ({
     try {
       await addVehicleType(data);
       await fetchVehicleTypes();
-      console.log("Vehicle type added successfully");
+
       reset();
       setIsAddVehicleTypeModal(false);
     } catch (error) {

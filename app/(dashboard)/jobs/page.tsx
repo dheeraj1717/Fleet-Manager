@@ -41,7 +41,7 @@ const Jobs = () => {
     fetchJobs(currentPage, limit, searchTerm);
   }, [currentPage, searchTerm]);
 
-  const handleEdit = (item: any) => console.log("Edit:", item);
+  const handleEdit = (item: any) => {};
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;

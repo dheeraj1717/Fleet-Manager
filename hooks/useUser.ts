@@ -20,7 +20,7 @@ export const useUser = () => {
       const res = await apiClient.get("/api/user/me", {
         withCredentials: true,
       });
-      console.log(res.data);
+
       setUser(res.data);
     } catch (error) {
       console.error("Error fetching user:", error);

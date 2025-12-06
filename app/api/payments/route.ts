@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       paymentDate,
     } = body;
 
-    console.log("Payment request:", body);
+
 
     if (!invoiceId || !clientId || !amount || !paymentMethod) {
       return errorResponse(
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("Payment created:", payment);
+
 
     // Update invoice amounts
     const newPaidAmount = invoice.paidAmount + parseFloat(amount.toString());
@@ -135,11 +135,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("Invoice updated:", {
-      newPaidAmount,
-      newBalanceAmount,
-      newStatus,
-    });
+
 
     return successResponse(payment, 201);
   } catch (error) {

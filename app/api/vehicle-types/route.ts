@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         });
         return successResponse(vehicleTypes,200);
     } catch (error) {
-        console.log(error);
+
         return errorResponse("Something went wrong", 500);
     }
 }
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     return successResponse(vehicleType, 201);
   } catch (error) {
-    console.log(error);
+
     return errorResponse("Failed to create vehicle type", 500);
   }
 }

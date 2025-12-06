@@ -76,7 +76,7 @@ export const useJobs = () => {
     try {
       await apiClient.post("/api/jobs", jobData, { withCredentials: true });
     } catch (error) {
-      console.log(error);
+
       setAddJobError(error as Error);
       throw error;
     }

@@ -99,7 +99,7 @@ const AddPayment = () => {
         notes: data.notes || null,
       };
 
-      console.log("Submitting payment:", payload);
+
 
       await apiClient.post("/api/payments", payload, {
         withCredentials: true,

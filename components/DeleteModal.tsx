@@ -14,7 +14,7 @@ const DeleteModal = ({
   description: string;
 }) => {
 
-  console.log(item);
+
   const handleDelete = (item: any) => {
     onDelete(item);
     setIsModalOpen(false);

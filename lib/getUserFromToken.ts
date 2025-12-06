@@ -9,7 +9,7 @@ interface DecodedToken {
 
 export const getUserFromToken = (): { userId: string } | null => {
   const token = Cookies.get("accessToken");
-  console.log(token);
+
   if (!token) return null;
 
   try {

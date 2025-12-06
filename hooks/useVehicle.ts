@@ -34,7 +34,7 @@ export const useVehicle = () => {
         withCredentials: true,
       });
       const data = res.data;
-      console.log(data)
+
       setVehicles(data.vehicles);
       setTotal(data.total || 0);
     } catch (error: any) {

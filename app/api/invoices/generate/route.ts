@@ -5,30 +5,23 @@ import { getUserFromRequest, errorResponse, successResponse } from '@/lib/auth';
 export async function POST(request: NextRequest) {
   try {
     const userId = await getUserFromRequest(request);
-    console.log('Generate invoice - User ID:', userId);
+
      
     if (!userId) {
       return errorResponse('Unauthorized', 401);
     }
 
     const body = await request.json();
-    console.log('Generate invoice - Request body:', body);
+
     
     const { clientId, startDate, endDate, tax, notes } = body;
 
     if (!clientId || !startDate || !endDate) {
-      console.log('Missing required fields:', { clientId, startDate, endDate });
+
       return errorResponse('Client ID, start date, and end date are required', 400);
     }
 
-    console.log('Searching for unbilled jobs with criteria:', {
-      userId,
-      clientId,
-      startDate,
-      endDate,
-      invoiceId: null,
-      status: 'COMPLETED'
-    });
+
 
     // Get unbilled completed jobs
     const jobs = await prisma.job.findMany({
@@ -44,8 +37,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    console.log('Found jobs:', jobs.length);
-    console.log('Job details:', jobs.map(j => ({ id: j.id, date: j.date, amount: j.amount })));
+
 
     if (jobs.length === 0) {
       return errorResponse('No unbilled jobs found for this period', 404);
@@ -58,13 +50,7 @@ export async function POST(request: NextRequest) {
     const taxAmount = cgst + sgst;
     const totalAmount = subtotal + taxAmount;
 
-    console.log('Invoice calculations:', {
-      subtotal,
-      cgst,
-      sgst,
-      taxAmount,
-      totalAmount
-    });
+
 
     // Create invoice
     const invoice = await prisma.invoice.create({
@@ -82,7 +68,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    console.log('Invoice created:', invoice.id);
+
 
     // Link jobs to invoice
     const updateResult = await prisma.job.updateMany({
@@ -94,7 +80,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    console.log('Jobs linked to invoice:', updateResult.count);
+
 
     // Return invoice with jobs
     const invoiceWithJobs = await prisma.invoice.findUnique({
@@ -112,7 +98,7 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    console.log('Returning invoice with', invoiceWithJobs?.jobs.length, 'jobs');
+
 
     return successResponse(invoiceWithJobs, 201);
 

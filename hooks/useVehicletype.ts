@@ -28,7 +28,7 @@ export const useVehicleType = () => {
       );
 
       const data = res.data;
-      console.log(data);
+
       setVehicleTypes(data);
     } catch (error: any) {
       setError(error);

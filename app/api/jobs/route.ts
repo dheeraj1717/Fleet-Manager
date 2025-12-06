@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     const data = CreateJobSchema.safeParse(body);
 
     if (!data.success) {
-      console.log("Validation errors:", data.error);
+
       return errorResponse("Incorrect inputs", 400);
     }
 

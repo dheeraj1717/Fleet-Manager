@@ -42,7 +42,6 @@ const Drivers = () => {
   };
 
   const handleEdit = (item: any) => {
-    console.log("Edit:", item);
   };
 
   const handleDelete = (item: any) => {

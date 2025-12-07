@@ -87,7 +87,7 @@ const fetchAllClients = async () => {
 
   const deleteClient = async (id: number) => {
     try {
-      await apiClient.get(`/api/client?id=${id}`, {
+      await apiClient.delete(`/api/client?id=${id}`, {
         withCredentials: true,
       });
       await fetchClients();

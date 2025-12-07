@@ -67,11 +67,12 @@ const Clients = () => {
     setIsEditModalOpen(false);
   });
 
-  // const handleDelete = async (e: React.MouseEvent, item: any) => {
-  //   e.stopPropagation();
-  //   setItemToDelete(item);
-  //   setIsDeleteModalOpen(true);
-  // };
+  const handleDelete = async (e: React.MouseEvent, item: any) => {
+    e.stopPropagation();
+    setItemToDelete(item);
+    setIsDeleteModalOpen(true);
+    setCurrentPage(1);
+  };
 
   useOnclickOutside(addClientRef as React.RefObject<HTMLElement>, () => {
     setIsModalOpen(false);
@@ -179,13 +180,13 @@ const Clients = () => {
                         >
                           <Pencil size={18} />
                         </button>
-                        {/* <button
+                        <button
                           onClick={(e) => handleDelete(e, client)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-md transition-colors cursor-pointer"
                           title="Delete"
                         >
                           <Trash2 size={18} />
-                        </button> */}
+                        </button>
                       </div>
                     </td>
                   </tr>

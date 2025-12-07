@@ -10,14 +10,18 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const isActive = searchParams.get('isActive');
+    const isActiveParam = searchParams.get('isActive');
     const limit = searchParams.get("limit");
     const offset = searchParams.get("offset");
     const search = searchParams.get("search")||"";
 
-     const whereCondition: any = {
+    // Default to showing only active clients unless 'false' or 'all' is specified
+    // If 'all' is passed, we don't filter by isActive
+    // If 'false' is passed, we show inactive
+    // If nothing or 'true' is passed, we show active
+    
+    const whereCondition: any = {
       userId,
-      ...(isActive !== null && { isActive: isActive === "true" }),
       ...(search && {
         OR: [
           { name: { contains: search, mode: "insensitive" } },
@@ -25,6 +29,10 @@ export async function GET(request: NextRequest) {
         ],
       }),
     };
+
+    if (isActiveParam !== 'all') {
+        whereCondition.isActive = isActiveParam === 'false' ? false : true;
+    }
 
     const [clients, totalCount] = await Promise.all([
       prisma.client.findMany({
@@ -172,18 +180,14 @@ export async function DELETE(request: NextRequest) {
       return errorResponse('Client ID is required');
     }
 
-    // Check for independent records
-    const jobCount = await prisma.job.count({ where: { clientId: id } });
-    const invoiceCount = await prisma.invoice.count({ where: { clientId: id } });
-
-    if (jobCount > 0 || invoiceCount > 0) {
-      return errorResponse("Cannot delete client with associated jobs or invoices", 400);
-    }
-
-    const client = await prisma.client.delete({
+    // Soft delete: Just mark as inactive
+    const client = await prisma.client.update({
       where: {
         id,
         userId
+      },
+      data: {
+        isActive: false
       }
     });
 

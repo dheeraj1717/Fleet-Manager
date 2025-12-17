@@ -73,7 +73,7 @@ export const useDriver = () => {
 
   const deleteDriver = async (id: number) => {
     try {
-      await apiClient.get(`/api/drivers?id=${id}`, {
+      await apiClient.delete(`/api/drivers?id=${id}`, {
         withCredentials: true,
       });
       await fetchDrivers();

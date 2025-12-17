@@ -15,6 +15,7 @@ import { useVehicleType } from "@/hooks/useVehicletype";
 import { useVehicle } from "@/hooks/useVehicle";
 import SearchBar from "@/components/SearchBar";
 import RenderPageNumbers from "@/components/RenderPageNumbers";
+import useNotification from "@/hooks/useNotification";
 
 const Vehicles = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,7 +38,10 @@ const Vehicles = () => {
     total,
     loading: vehicleLoading,
     error: vehicleError,
+    deleteVehicle
   } = useVehicle();
+
+  const { triggerNotification, NotificationComponent } = useNotification();
 
   // Pagination + Search states
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,6 +60,19 @@ const Vehicles = () => {
     setItemToDelete(item);
     setIsDeleteModalOpen(true);
   };
+
+  const handleDeleteVehicle = async (item: any) => {
+    try {
+      if(item?.id) await deleteVehicle(item.id);
+      setIsDeleteModalOpen(false);
+      triggerNotification({
+        message: "Vehicle deleted successfully",
+        type: "success",
+      });
+    } catch (error) {
+       triggerNotification({ message: "Something went wrong", type: "error" });
+    }
+  }
 
   const handleSearch = (query: string) => {
     setSearchTerm(query);
@@ -165,7 +182,9 @@ const Vehicles = () => {
                       </td>
                       <td className="p-4 text-gray-700">
                         {vehicle.insuranceExpiry
-                          ? new Date(vehicle.insuranceExpiry).toLocaleDateString()
+                          ? new Date(
+                              vehicle.insuranceExpiry
+                            ).toLocaleDateString()
                           : "-"}
                       </td>
                       <td className="p-4 text-center">
@@ -303,12 +322,13 @@ const Vehicles = () => {
       {isDeleteModalOpen && (
         <DeleteModal
           setIsModalOpen={setIsDeleteModalOpen}
-          onDelete={() => {}}
+          onDelete={handleDeleteVehicle}
           item={itemToDelete}
           heading="Delete Vehicle"
           description="Are you sure you want to delete this vehicle?"
         />
       )}
+      {NotificationComponent}
     </div>
   );
 };

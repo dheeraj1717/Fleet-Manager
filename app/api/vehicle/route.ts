@@ -94,3 +94,41 @@ export async function GET(request: NextRequest) {
   });
 }
 
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = await getUserFromRequest(request);
+    if (!userId) {
+      return errorResponse("Unauthorized", 401);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return errorResponse("Vehicle ID is required", 400);
+    }
+
+    // Verify ownership
+    const vehicle = await prisma.vehicle.findUnique({
+      where: { id },
+      select: { ownerId: true },
+    });
+
+    if (!vehicle) {
+      return errorResponse("Vehicle not found", 404);
+    }
+
+    if (vehicle.ownerId !== userId) {
+      return errorResponse("Unauthorized", 403);
+    }
+
+    await prisma.vehicle.delete({
+      where: { id },
+    });
+
+    return successResponse({ message: "Vehicle deleted successfully" });
+  } catch (error) {
+    console.error("Delete vehicle error:", error);
+    return errorResponse("Failed to delete vehicle", 500);
+  }
+}

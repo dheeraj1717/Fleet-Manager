@@ -26,10 +26,10 @@ const GenerateInvoice = () => {
   const [unbilledJobs, setUnbilledJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { fetchClients, clients } = useClient();
-  const {NotificationComponent, triggerNotification} = useNotification();
-useEffect(() => {
- fetchClients();
-},[])
+  const { NotificationComponent, triggerNotification } = useNotification();
+  useEffect(() => {
+    fetchClients();
+  }, []);
   const {
     register,
     handleSubmit,
@@ -44,56 +44,52 @@ useEffect(() => {
 
   // Debug log to see when values change
 
+  const fetchUnbilledJobs = async () => {
+    try {
+      setLoading(true);
+      const url = `/api/jobs?clientId=${clientId}&invoiceId=null&startDate=${startDate}&endDate=${endDate}&status=COMPLETED`;
 
+      const response = await apiClient.get(url, {
+        withCredentials: true,
+      });
 
+      // Fix: Access the data correctly
+      const jobsData = response.data.jobs || response.data || [];
 
-    const fetchUnbilledJobs = async () => {
+      setUnbilledJobs(jobsData);
+    } catch (error) {
+      console.error("Error fetching unbilled jobs:", error);
+      setUnbilledJobs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    if (clientId && startDate && endDate) {
+      fetchUnbilledJobs();
+    } else {
+      setUnbilledJobs([]);
+    }
+  }, [clientId, startDate, endDate]);
 
-      try {
-        setLoading(true);
-        const url = `/api/jobs?clientId=${clientId}&invoiceId=null&startDate=${startDate}&endDate=${endDate}&status=COMPLETED`;
+  const onSubmit = async (data: GenerateInvoiceForm) => {
+    try {
+      const response = await apiClient.post("/api/invoices/generate", data, {
+        withCredentials: true,
+      });
 
+      const invoice = response.data;
 
-        const response = await apiClient.get(url, {
-          withCredentials: true,
-        });
-
-
-
-        // Fix: Access the data correctly
-        const jobsData = response.data.jobs || response.data || [];
-
-        setUnbilledJobs(jobsData);
-      } catch (error) {
-        console.error("Error fetching unbilled jobs:", error);
-        setUnbilledJobs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-const onSubmit = async (data: GenerateInvoiceForm) => {
-  try {
-    const response = await apiClient.post("/api/invoices/generate", data, {
-      withCredentials: true,
-    });
-
-
-
-    const invoice = response.data;
-
-    router.push(`/invoices/${invoice.id}`);
-  } catch (error: any) {
-    console.error("Error generating invoice:", error);
-    triggerNotification({
-      message: error?.response?.data?.error || "Something went wrong",
-      type: "error",
-    })
-  }
-};
-
-
+      router.push(`/invoices/${invoice.id}`);
+    } catch (error: any) {
+      console.error("Error generating invoice:", error);
+      triggerNotification({
+        message: error?.response?.data?.error || "Something went wrong",
+        type: "error",
+      });
+    }
+  };
 
   const totalAmount = unbilledJobs.reduce(
     (sum, job) => sum + (job.amount || 0),
@@ -112,8 +108,6 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
     const startDateStr = firstDay.toISOString().split("T")[0];
     const endDateStr = lastDay.toISOString().split("T")[0];
 
-
-
     setValue("startDate", startDateStr);
     setValue("endDate", endDateStr);
   };
@@ -125,8 +119,6 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
 
     const startDateStr = firstDay.toISOString().split("T")[0];
     const endDateStr = lastDay.toISOString().split("T")[0];
-
-
 
     setValue("startDate", startDateStr);
     setValue("endDate", endDateStr);
@@ -142,7 +134,9 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
         Back
       </button>
 
-      <h1 className="text-2xl sm:text-3xl font-semibold mb-6">Generate Invoice</h1>
+      <h1 className="text-2xl sm:text-3xl font-semibold mb-6">
+        Generate Invoice
+      </h1>
 
       {/* Debug Info */}
       {/* <div className="mb-4 p-4 bg-gray-100 rounded text-sm">
@@ -170,7 +164,11 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
               >
                 <option value="">Select client</option>
                 {clients.map((client) => (
-                  <option key={client.id} value={client.id} className="truncate">
+                  <option
+                    key={client.id}
+                    value={client.id}
+                    className="truncate"
+                  >
                     {client.name} {client.company && `(${client.company})`}
                   </option>
                 ))}
@@ -276,10 +274,9 @@ const onSubmit = async (data: GenerateInvoiceForm) => {
             </div>
           ) : unbilledJobs.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              {clientId && startDate && endDate 
+              {clientId && startDate && endDate
                 ? "No unbilled jobs found for the selected period."
-                : "Please select client and date range to see jobs."
-              }
+                : "Please select client and date range to see jobs."}
             </div>
           ) : (
             <>

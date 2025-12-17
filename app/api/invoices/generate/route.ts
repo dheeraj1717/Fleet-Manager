@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest, errorResponse, successResponse } from '@/lib/auth';
+import { generateInvoiceNumber } from '@/lib/invoice';
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,49 +46,74 @@ export async function POST(request: NextRequest) {
 
     // Calculate totals
     const subtotal = jobs.reduce((sum, job) => sum + (job.amount || 0), 0);
-    const cgst = subtotal * 0.09;
-    const sgst = subtotal * 0.09;
-    const taxAmount = cgst + sgst;
-    const totalAmount = subtotal + taxAmount;
+    const round2 = (num: number) => Math.round(num * 100) / 100;
+    
+    const cgst = round2(subtotal * 0.09);
+    const sgst = round2(subtotal * 0.09);
+    const taxAmount = round2(cgst + sgst);
+    const totalAmount = round2(subtotal + taxAmount);
 
 
 
     // Create invoice
     // Create invoice and link jobs in a transaction
-    const invoice = await prisma.$transaction(async (tx) => {
-        const newInvoice = await tx.invoice.create({
-          data: {
-            userId,
-            clientId,
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
-            subtotal,
-            tax: taxAmount,
-            totalAmount,
-            balanceAmount: totalAmount,
-            notes: notes || null,
-            status: 'SENT'
-          }
+    let invoice;
+    let retries = 3;
+    
+    while (retries > 0) {
+      try {
+        invoice = await prisma.$transaction(async (tx) => {
+            const newInvoice = await tx.invoice.create({
+              data: {
+                invoiceNumber: await generateInvoiceNumber(new Date(startDate)),
+                userId,
+                clientId,
+                startDate: new Date(startDate),
+                endDate: new Date(endDate),
+                subtotal,
+                tax: taxAmount,
+                totalAmount,
+                balanceAmount: totalAmount,
+                notes: notes || null,
+                status: 'SENT'
+              }
+            });
+    
+            const updateResult = await tx.job.updateMany({
+              where: {
+                id: { in: jobs.map(j => j.id) },
+                invoiceId: null // Ensure they haven't been picked up by another process
+              },
+              data: {
+                invoiceId: newInvoice.id
+              }
+            });
+    
+            if (updateResult.count !== jobs.length) {
+                throw new Error("Some jobs were already invoiced during this process");
+            }
+            
+            return newInvoice;
         });
-
-        const updateResult = await tx.job.updateMany({
-          where: {
-            id: { in: jobs.map(j => j.id) },
-            invoiceId: null // Ensure they haven't been picked up by another process
-          },
-          data: {
-            invoiceId: newInvoice.id
-          }
-        });
-
-        if (updateResult.count !== jobs.length) {
-            throw new Error("Some jobs were already invoiced during this process");
-        }
         
-        return newInvoice;
-    });
+        break; // Success, exit loop
+      } catch (error: any) {
+        // Check if unique constraint violation on invoiceNumber
+        if (error.code === 'P2002' && error.meta?.target?.includes('invoiceNumber')) {
+          retries--;
+          console.log(`Invoice number collision, retrying... (${3 - retries}/3)`);
+          if (retries === 0) throw new Error("Failed to generate unique invoice number after multiple attempts");
+          continue; // Try again
+        }
+        throw error; // Rethrow other errors
+      }
+    }
 
 
+
+    if (!invoice) {
+        throw new Error("Failed to create invoice");
+    }
 
     // Return invoice with jobs
     const invoiceWithJobs = await prisma.invoice.findUnique({

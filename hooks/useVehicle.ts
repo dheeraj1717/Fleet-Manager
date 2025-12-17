@@ -72,5 +72,15 @@ export const useVehicle = () => {
     }
   };
 
-  return { vehicles, loading, error, total, fetchVehicles, addVehicle, fetchAllVehicles };
+  const deleteVehicle = async (id: string) => {
+    try {
+      await apiClient.delete(`/api/vehicle?id=${id}`, { withCredentials: true });
+      await fetchVehicles();
+    } catch (error: any) {
+      console.error("Error deleting vehicle:", error);
+      throw error;
+    }
+  };
+
+  return { vehicles, loading, error, total, fetchVehicles, addVehicle, fetchAllVehicles, deleteVehicle };
 };

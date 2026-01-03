@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
         driverId,
         vehicleId,
         vehicleTypeId,
-        location,
+        location: location || "-",
         date: jobDate,
         startTime: jobStartTime,
         endTime: jobEndTime,

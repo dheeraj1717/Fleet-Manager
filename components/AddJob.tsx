@@ -33,7 +33,6 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
         driverId: "",
         vehicleId: "",
         vehicleTypeId: "",
-        location: "",
         date: "",
         startTime: "",
         endTime: "",
@@ -50,6 +49,10 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
     const totalHours = watch("totalHours");
     const ratePerHour = watch("ratePerHour");
     const selectedVehicleId = watch("vehicleId");
+    
+    // Watch time fields for auto-calculation
+    const startTime = watch("startTime");
+    const endTime = watch("endTime");
     const { triggerNotification, NotificationComponent } = useNotification();
     const {vehicles, fetchAllVehicles} = useVehicle();
     const { addJob, fetchJobs } = useJobs();
@@ -72,6 +75,31 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
       memoizedFetchDrivers();
       memoizedFetchVehicles();
     }, [memoizedFetchClients, memoizedFetchDrivers, memoizedFetchVehicles]);
+
+    // Auto-calculate hours when start/end time changes
+    useEffect(() => {
+      if (startTime && endTime) {
+        const [startH, startM] = startTime.split(":").map(Number);
+        const [endH, endM] = endTime.split(":").map(Number);
+        
+        const start = new Date();
+        start.setHours(startH, startM, 0, 0);
+        
+        const end = new Date();
+        end.setHours(endH, endM, 0, 0);
+        
+        // Handle overnight shifts (if end time is before start time, assume next day)
+        if (end < start) {
+          end.setDate(end.getDate() + 1);
+        }
+        
+        const diffMs = end.getTime() - start.getTime();
+        const diffHours = diffMs / (1000 * 60 * 60);
+        
+        // Round to 2 decimal places
+        setValue("totalHours", Number(diffHours.toFixed(2)));
+      }
+    }, [startTime, endTime, setValue]);
 
     // Auto-calculate amount when hours or rate changes
     useEffect(() => {
@@ -263,32 +291,6 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
             {/* Hidden vehicle type field - auto-filled */}
             <input type="hidden" {...register("vehicleTypeId")} />
 
-            {/* Location */}
-            <div>
-              <label
-                htmlFor="location"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Location <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="location"
-                {...register("location", {
-                  required: "Location is required",
-                })}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
-                  errors.location ? "border-red-500" : "border-gray-300"
-                }`}
-                placeholder="e.g., Construction Site, Gomti Nagar"
-              />
-              {errors.location && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.location.message}
-                </p>
-              )}
-            </div>
-
             {/* Row 2: Date and Start Time */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
@@ -373,17 +375,16 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                   Total Hours <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="number"
-                  step="0.01"
+                  type="text"
                   id="totalHours"
                   {...register("totalHours", {
                     required: "Total hours is required",
-                    min: { value: 0, message: "Hours must be positive" },
                   })}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-md bg-gray-50 focus:outline-none ${
                     errors.totalHours ? "border-red-500" : "border-gray-300"
                   }`}
-                  placeholder="e.g., 8"
+                  placeholder="Auto-calculated"
+                  readOnly
                 />
                 {errors.totalHours && (
                   <p className="text-red-500 text-sm mt-1">
@@ -400,8 +401,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                   Rate/Hour (₹) <span className="text-red-500">*</span>
                 </label>
                 <input
-                  type="number"
-                  step="0.01"
+                  type="text"
                   id="ratePerHour"
                   {...register("ratePerHour", {
                     required: "Rate per hour is required",
@@ -427,7 +427,7 @@ const AddJob = forwardRef<HTMLDivElement, AddJobProps>(
                   Total Amount (₹)
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   id="amount"
                   {...register("amount")}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 focus:outline-none"

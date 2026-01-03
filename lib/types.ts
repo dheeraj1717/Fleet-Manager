@@ -44,7 +44,7 @@ export const CreateJobSchema = z.object({
   clientId: z.string().min(1, "Invalid client"),
   vehicleTypeId: z.string().min(1, "Invalid vehicle type"),
   date: z.string().min(1, "Date is required"),
-  location: z.string().min(2, "Location must be at least 2 characters"),
+  location: z.string().optional(),
   startTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
   totalHours: z.number().min(0, "Total hours must be positive"),

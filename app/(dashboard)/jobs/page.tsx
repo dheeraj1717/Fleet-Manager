@@ -138,7 +138,7 @@ const Jobs = () => {
                     Vehicle
                   </th>
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                    Location
+                    Notes
                   </th>
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                     Date
@@ -184,7 +184,7 @@ const Jobs = () => {
                       </div>
                     </td>
 
-                    <td className="p-4">{job.location}</td>
+                    <td className="p-4">{job.notes || "-"}</td>
 
                     <td className="p-4">
                       {new Date(job.date).toLocaleDateString()}

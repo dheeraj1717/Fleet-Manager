@@ -9,7 +9,7 @@ export interface CreateJobData {
   vehicleTypeId: string;
 
   challanNo: string;
-  location: string;
+  location?: string;
 
   date: string;
   startTime: string;
@@ -32,7 +32,7 @@ export interface Job {
   vehicleId: string;
   vehicleTypeId: string;
   challanNo: string;
-  location: string;
+  location?: string;
   date: string;
   startTime: string;
   endTime: string;

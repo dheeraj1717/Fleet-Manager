@@ -110,11 +110,29 @@ model Vehicle {
 
     // Relations
     jobs Job[]
+    fuelEntries FuelEntry[]
 
     @@unique([ownerId, registrationNo]) // Registration unique per owner
     @@index([ownerId])
     @@index([vehicleTypeId])
     @@index([isActive])
+}
+
+// Fuel tracking for vehicles
+model FuelEntry {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+    vehicleId String
+
+    date      DateTime
+    amount    Float // Total cost
+    liters    Float // Volume
+
+    @@index([vehicleId])
+    @@index([date])
 }
 
 // Driver who operates vehicles

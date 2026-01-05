@@ -56,6 +56,8 @@ export async function GET(request: NextRequest) {
   const limit = parseInt(searchParams.get("limit") || "10");
   const offset = parseInt(searchParams.get("offset") || "0");
   const search = searchParams.get("search") || "";
+  const startDate = searchParams.get("startDate");
+  const endDate = searchParams.get("endDate");
 
   const whereCondition: any = {
     ownerId: userId,
@@ -68,11 +70,27 @@ export async function GET(request: NextRequest) {
     ];
   }
 
+  // Fuel filters condition
+  const fuelWhere: any = {};
+  if (startDate && endDate) {
+    fuelWhere.date = {
+      gte: new Date(startDate),
+      lte: new Date(endDate),
+    };
+  }
+
   const vehicles = await prisma.vehicle.findMany({
     where: whereCondition,
     include: {
       vehicleType: {
         select: { name: true },
+      },
+      fuelEntries: {
+        where: fuelWhere,
+        select: {
+          amount: true,
+          liters: true,
+        },
       },
     },
     skip: offset,
@@ -80,17 +98,55 @@ export async function GET(request: NextRequest) {
     orderBy: { createdAt: "desc" },
   });
 
-  const transformedVehicles = vehicles.map((vehicle) => ({
-    ...vehicle,
-    vehicleType: vehicle.vehicleType.name,
-  }));
+  const transformedVehicles = vehicles.map((vehicle) => {
+    const totalFuelCost = vehicle.fuelEntries.reduce(
+      (sum, entry) => sum + entry.amount,
+      0
+    );
+    const totalFuelLiters = vehicle.fuelEntries.reduce(
+      (sum, entry) => sum + entry.liters,
+      0
+    );
+
+    return {
+      ...vehicle,
+      vehicleType: vehicle.vehicleType.name,
+      totalFuelCost,
+      totalFuelLiters,
+      fuelEntries: undefined, // Don't send raw entries
+    };
+  });
+
+  // Calculate fleet-wide stats
+  const allFuelEntries = await prisma.fuelEntry.findMany({
+    where: {
+      vehicle: { ownerId: userId },
+      ...(startDate && endDate
+        ? { date: { gte: new Date(startDate), lte: new Date(endDate) } }
+        : {}),
+    },
+    select: {
+      amount: true,
+      liters: true,
+    },
+  });
+
+  const fleetStats = {
+    totalCost: allFuelEntries.reduce((sum, entry) => sum + entry.amount, 0),
+    totalLiters: allFuelEntries.reduce((sum, entry) => sum + entry.liters, 0),
+    count: await prisma.vehicle.count({
+      where: { ownerId: userId, isActive: true },
+    }),
+  };
 
   const total = await prisma.vehicle.count({
     where: whereCondition,
   });
+
   return successResponse({
     vehicles: transformedVehicles,
-    total
+    total,
+    stats: fleetStats,
   });
 }
 

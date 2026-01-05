@@ -12,6 +12,14 @@ export interface Vehicle {
   vehicleType: string;
   vehicleTypeId: string;
   insuranceExpiry: string | null;
+  totalFuelCost?: number;
+  totalFuelLiters?: number;
+}
+
+export interface FleetStats {
+  totalCost: number;
+  totalLiters: number;
+  count: number;
 }
 
 export const useVehicle = () => {
@@ -19,18 +27,21 @@ export const useVehicle = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [total, setTotal] = useState(0);
+  const [stats, setStats] = useState<FleetStats | null>(null);
 
   const fetchVehicles = async (
     page: number = 1,
     limit: number = 10,
-    search: string = ""
+    search: string = "",
+    startDate?: string,
+    endDate?: string
   ) => {
     setLoading(true);
     setError(null);
     try {
       const offset = (page - 1) * limit;
       const res = await apiClient.get(`/api/vehicle`, {
-        params: { offset, limit, search: search.trim() },
+        params: { offset, limit, search: search.trim(), startDate, endDate },
         withCredentials: true,
       });
       const data = res.data;
@@ -82,5 +93,5 @@ export const useVehicle = () => {
     }
   };
 
-  return { vehicles, loading, error, total, fetchVehicles, addVehicle, fetchAllVehicles, deleteVehicle };
+  return { vehicles, loading, error, total, stats, fetchVehicles, addVehicle, fetchAllVehicles, deleteVehicle };
 };

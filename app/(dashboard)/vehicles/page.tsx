@@ -5,6 +5,7 @@ import {
   Trash2,
   ChevronLeftIcon,
   ChevronRightIcon,
+  Fuel,
 } from "lucide-react";
 import { RefObject, useRef, useState, useEffect } from "react";
 import AddVehicles from "@/components/AddVehicles";
@@ -16,13 +17,16 @@ import { useVehicle } from "@/hooks/useVehicle";
 import SearchBar from "@/components/SearchBar";
 import RenderPageNumbers from "@/components/RenderPageNumbers";
 import useNotification from "@/hooks/useNotification";
+import FuelManagementModal from "@/components/FuelManagementModal";
 
 const Vehicles = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddVehicleTypeModal, setIsAddVehicleTypeModal] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isFuelModalOpen, setIsFuelModalOpen] = useState(false);
   const addVehicleRef = useRef<HTMLElement>(null);
   const [itemToDelete, setItemToDelete] = useState<any>(null);
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
 
   const {
     vehicleTypes,
@@ -124,6 +128,7 @@ const Vehicles = () => {
         />
       </div>
 
+
       <div className="flex flex-col md:flex-row gap-6">
         {/* Vehicles Table */}
         <div className="w-full mt-10 max-w-5xl mx-auto sm:px-4 overflow-auto">
@@ -190,8 +195,18 @@ const Vehicles = () => {
                       <td className="p-4 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <button
+                            onClick={() => {
+                              setSelectedVehicle(vehicle);
+                              setIsFuelModalOpen(true);
+                            }}
+                            className="p-2 text-primary hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+                            title="Fuel Records & Stats"
+                          >
+                            <Fuel size={18} />
+                          </button>
+                          <button
                             onClick={() => handleEdit(vehicle)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
                             title="Edit"
                           >
                             <Pencil size={18} />
@@ -237,7 +252,7 @@ const Vehicles = () => {
         </div>
 
         {/* Vehicle Types Table */}
-        <div className="md:mt-10 mx-auto sm:px-4 min-w-sm sm:min-w-xs overflow-auto">
+        <div className="md:mt-10 mx-auto sm:px-4 min-w-[300px] overflow-auto">
           <div className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
             {typeLoading ? (
               <div className="p-8 text-center text-gray-500">
@@ -326,6 +341,16 @@ const Vehicles = () => {
           item={itemToDelete}
           heading="Delete Vehicle"
           description="Are you sure you want to delete this vehicle?"
+        />
+      )}
+
+      {isFuelModalOpen && selectedVehicle && (
+        <FuelManagementModal
+          vehicle={selectedVehicle}
+          onClose={() => {
+            setIsFuelModalOpen(false);
+            setSelectedVehicle(null);
+          }}
         />
       )}
       {NotificationComponent}

@@ -11,8 +11,8 @@ export async function generateInvoiceNumber(date: Date = new Date()): Promise<st
   let endYear = year + 1;
 
   if (month < 3) {
-    startYear = year - 1;
-    endYear = year;
+    startYear = year;
+    endYear = year + 1;
   }
 
   const startYearShort = startYear.toString().slice(-2);

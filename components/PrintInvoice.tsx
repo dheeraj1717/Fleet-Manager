@@ -109,7 +109,11 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
         filename: `Invoice_${invoice.invoiceNumber}.pdf`,
         image: { type: "jpeg" as const, quality: 0.98 },
         html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm" as const, format: "a4" as const, orientation: "portrait" as const },
+        jsPDF: {
+          unit: "mm" as const,
+          format: "a4" as const,
+          orientation: "portrait" as const,
+        },
       };
 
       html2pdf().from(element).set(opt).save();
@@ -235,7 +239,15 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
         {/* Print Content */}
         <div ref={printRef} className="p-0">
           {/* Page 1: Tax Invoice */}
-          <div className="page" style={{ padding: "20px", boxSizing: "border-box", height: "297mm", position: "relative" }}>
+          <div
+            className="page"
+            style={{
+              padding: "20px",
+              boxSizing: "border-box",
+              height: "297mm",
+              position: "relative",
+            }}
+          >
             <style>
               {`
                 .tax-invoice-page {
@@ -370,7 +382,8 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
                     <strong>Invoice No :</strong> {invoice.invoiceNumber}
                   </p>
                   <p>
-                    <strong>Dated :</strong> {today}
+                    <strong>Dated :</strong>{" "}
+                    {new Date(invoice.endDate).toLocaleDateString("en-GB")}
                   </p>
                   <p>
                     <strong>Place :</strong> Rajasthan (08)
@@ -406,11 +419,10 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
                   <tr>
                     <td style={{ textAlign: "center" }}>1</td>
                     <td style={{ paddingLeft: "10px" }}>
-                      <strong>Crane Charges</strong>
+                      <strong>{invoice.notes || "Crane Charges"}</strong>
                       <br />
-                      Loading & Unloading of Materials
-                      <br />
-                      ( Work Details Enclosed )
+                      {invoice.notes ? "" : "Loading & Unloading of Materials"}
+                      {invoice.notes ? null : <br />}( Work Details Enclosed )
                     </td>
                     <td style={{ textAlign: "center" }}>9428</td>
                     <td style={{ textAlign: "center" }}>Lot</td>
@@ -457,7 +469,8 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
                   marginBottom: "15px",
                 }}
               >
-                In Words :- {numberToWords(Math.round(invoice.totalAmount))} Rupees Only
+                In Words :- {numberToWords(Math.round(invoice.totalAmount))}{" "}
+                Rupees Only
               </div>
 
               {userCompany.bankDetails && (
@@ -469,19 +482,27 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
                     <strong>Bank :</strong> {userCompany.bankDetails.bankName}
                   </p>
                   <p>
-                    <strong>A/C No. :</strong> {userCompany.bankDetails.accountNo}
+                    <strong>A/C No. :</strong>{" "}
+                    {userCompany.bankDetails.accountNo}
                   </p>
                   <p>
                     <strong>Branch :</strong> {userCompany.bankDetails.branch}
                   </p>
                   <p>
-                    <strong>IFSC Code :-</strong> {userCompany.bankDetails.ifscCode}
+                    <strong>IFSC Code :-</strong>{" "}
+                    {userCompany.bankDetails.ifscCode}
                   </p>
                 </div>
               )}
 
               <div className="tax-signature-section">
-                <div style={{ fontSize: "12px", marginBottom: "5px", textAlign: "right" }}>
+                <div
+                  style={{
+                    fontSize: "12px",
+                    marginBottom: "5px",
+                    textAlign: "right",
+                  }}
+                >
                   {userCompany.name}
                 </div>
                 <div
@@ -492,7 +513,7 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
                     paddingTop: "5px",
                     minWidth: "200px",
                     textAlign: "center",
-                    float: "right"
+                    float: "right",
                   }}
                 >
                   Authorised Signatory
@@ -502,7 +523,14 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
           </div>
 
           {/* Page 2: Work Details */}
-          <div className="page" style={{ padding: "20px", boxSizing: "border-box", minHeight: "297mm" }}>
+          <div
+            className="page"
+            style={{
+              padding: "20px",
+              boxSizing: "border-box",
+              minHeight: "297mm",
+            }}
+          >
             <style>
               {`
                 .work-details-page {
@@ -636,7 +664,11 @@ const PrintInvoice = ({ invoice, onClose, userCompany }: PrintInvoiceProps) => {
                     </tr>
                   ))}
                   <tr className="total-row">
-                    <td colSpan={6} className="text-right" style={{ paddingRight: "8px" }}>
+                    <td
+                      colSpan={6}
+                      className="text-right"
+                      style={{ paddingRight: "8px" }}
+                    >
                       Total
                     </td>
                     <td className="text-right">{invoice.subtotal}</td>

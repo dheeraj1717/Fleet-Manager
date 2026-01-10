@@ -81,10 +81,10 @@ const InvoiceDetails = () => {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-base sm:text-3xl font-bold text-gray-900">
-              Invoice #{invoice.invoiceNumber}
+              Invoice {invoice.invoiceNumber}
             </h1>
             <p className="text-gray-500 mt-1">
-              Created on {new Date(invoice.createdAt).toLocaleDateString()}
+              Invoice Date: {new Date(invoice.endDate).toLocaleDateString()}
             </p>
           </div>
           <span

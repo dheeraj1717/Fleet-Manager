@@ -5,6 +5,7 @@ import {
   Trash2,
   ChevronLeftIcon,
   ChevronRightIcon,
+  Eye,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useJobs } from "@/hooks/useJobs";
@@ -13,6 +14,17 @@ import RenderPageNumbers from "@/components/RenderPageNumbers";
 import DeleteModal from "@/components/DeleteModal";
 import AddJob from "@/components/AddJob";
 import useNotification from "@/hooks/useNotification";
+import ViewJobModal from "@/components/ViewJobModal";
+
+const formatTime = (dateString: string) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
 
 const Jobs = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,15 +33,10 @@ const Jobs = () => {
   const { triggerNotification, NotificationComponent } = useNotification();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const limit = 10;
-  const {
-    jobs,
-    total,
-    loading,
-    error,
-    deleteJob,
-    fetchJobs,
-  } = useJobs();
+  const { jobs, total, loading, error, deleteJob, fetchJobs } = useJobs();
   const totalPages = Math.ceil(total / limit);
 
   const handleSearch = useCallback((query: string) => {
@@ -51,6 +58,11 @@ const Jobs = () => {
   const handleDelete = (item: any) => {
     setItemToDelete(item);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleView = (item: any) => {
+    setSelectedJob(item);
+    setIsViewModalOpen(true);
   };
 
   const handleDeleteJob = async (item: any) => {
@@ -132,13 +144,7 @@ const Jobs = () => {
                     Client
                   </th>
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                    Driver
-                  </th>
-                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                    Vehicle
-                  </th>
-                  <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
-                    Notes
+                    Time
                   </th>
                   <th className="p-4 text-left text-sm font-semibold text-primary uppercase tracking-wider">
                     Date
@@ -171,20 +177,9 @@ const Jobs = () => {
 
                     <td className="p-4">{job.client?.name || "N/A"}</td>
 
-                    <td className="p-4">{job.driver?.name || "N/A"}</td>
-
-                    <td className="p-4">
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          {job.vehicle?.registrationNo || "N/A"}
-                        </span>
-                        <span className="text-xs text-gray-500">
-                          {job.vehicle?.vehicleType?.name || "N/A"}
-                        </span>
-                      </div>
+                    <td className="p-4 text-sm font-medium">
+                      {formatTime(job.startTime)} - {formatTime(job.endTime)}
                     </td>
-
-                    <td className="p-4">{job.notes || "-"}</td>
 
                     <td className="p-4">
                       {new Date(job.date).toLocaleDateString()}
@@ -206,6 +201,14 @@ const Jobs = () => {
 
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => handleView(job)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
+                          title="View Details"
+                        >
+                          <Eye size={18} />
+                        </button>
+
                         <button
                           onClick={() => handleEdit(job)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-md transition-colors cursor-pointer"
@@ -267,6 +270,17 @@ const Jobs = () => {
             item={itemToDelete}
             heading="Delete Job"
             description="Are you sure you want to delete this job? This action cannot be undone."
+          />
+        )}
+
+        {/* View Job Modal */}
+        {isViewModalOpen && selectedJob && (
+          <ViewJobModal
+            job={selectedJob}
+            onClose={() => {
+              setIsViewModalOpen(false);
+              setSelectedJob(null);
+            }}
           />
         )}
       </div>
